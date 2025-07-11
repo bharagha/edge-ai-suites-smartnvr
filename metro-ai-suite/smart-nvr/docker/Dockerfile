@@ -1,0 +1,61 @@
+# Combined Dockerfile for NVR Event Router (backend and UI)
+# Build stage - includes build dependencies
+FROM python:3.11-slim AS builder
+
+# Set environment variables for build stage
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt /app/requirements.txt
+
+# Install dependencies in virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install all dependencies
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt
+
+# Production stage - minimal runtime image
+FROM python:3.11-slim AS production
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MODE=combined \
+    API_BASE_URL=http://localhost:8000 \
+    HOST_API_URL=http://localhost:8000 \
+    EVENT_POLL_INTERVAL=10 \
+    PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+# Install only runtime dependencies (curl for healthchecks)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy backend source code
+COPY src/ /app/backend/
+
+# Copy UI source code
+COPY ui/ /app/ui/
+
+# Create start script to handle different modes
+COPY docker/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+# Expose ports for both services
+EXPOSE 8000 7860
+
+# Run the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
