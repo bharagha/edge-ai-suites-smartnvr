@@ -40,7 +40,7 @@ async def get_rules(request=None):
     return rules
 
 async def delete_rule(request: Request, rule_id: str) -> bool:
-    """Deletes a rule and removes the ID from the 'rules' set."""
+    """Deletes a rule and removes the ID from the 'rules' set, including associated responses."""
     redis_client = request.app.state.redis_client
 
     # Check if rule exists
@@ -48,10 +48,13 @@ async def delete_rule(request: Request, rule_id: str) -> bool:
     if not exists:
         return False
 
-    # Delete rule and remove ID from 'rules' set
+    # Delete rule and associated data
     await redis_client.delete(f"rule:{rule_id}")
+    await redis_client.delete(f"response:{rule_id}")  # Delete associated responses
     await redis_client.srem("rules", rule_id)
+
     return True
+
 
 # --- RESPONSE MANAGEMENT ---
 

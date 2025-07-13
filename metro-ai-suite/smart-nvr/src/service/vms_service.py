@@ -10,7 +10,8 @@ from fastapi import HTTPException
 from api.endpoints.frigate_api import FrigateService
 from model.model import Sampling, Evam, SummaryPayload
 from api.endpoints.summarization_api import SummarizationService
-
+from config import VSS_SUMMARY_URL
+from config import VSS_SEARCH_URL
 # Initialize logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -22,16 +23,19 @@ frigate_service = FrigateService()
 summarization_service = SummarizationService()
 
 class VmsService:
-    def __init__(self, frigate_service):
+    def __init__(self, frigate_service, summarization_service):
         self.frigate_service = frigate_service
+        self.summarization_service = summarization_service
+        self.vss_summary_url: str = VSS_SUMMARY_URL
+        self.vss_search_url: str = VSS_SEARCH_URL
         logger.info("VmsService initialized.")
-
     async def upload_video_to_summarizer(
         self,
         camera_name: str,
         start_time: float,
-        end_time: float
-    ) -> str:
+        end_time: float,
+        is_search: bool
+    ) -> dict:
         """Fetches clip from Frigate, writes to temp file, uploads it, and returns videoId."""
         try:
             stream_response = self.frigate_service.get_clip_from_timestamps(
@@ -40,9 +44,10 @@ class VmsService:
             logger.info("Clip retrieved from Frigate.")
         except Exception as e:
             logger.error(f"Failed to get clip: {e}")
-            raise
+            return {"status": 500, "message": "Failed to retrieve video clip from camera"}
 
-        # Write stream to temp file
+        # Write stream to temp file while checking size
+        temp_file_size = 0
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
             tmp_path = tmp_file.name
         logger.info(f"Temporary file created at: {tmp_path}")
@@ -51,71 +56,108 @@ class VmsService:
             async with aiofiles.open(tmp_path, "wb") as f:
                 async for chunk in stream_response.body_iterator:
                     await f.write(chunk)
-            logger.info("Stream written to temporary file.")
+                    temp_file_size += len(chunk)
+            
+            # Check if video is too small (likely empty)
+            if temp_file_size <= 100:
+                logger.warning(f"No video found for given timestamps (file size: {temp_file_size} bytes)")
+                os.remove(tmp_path)
+                return {"status": 404, "message": "No video footage available for the selected time range. Please try different timestamps."}
+                
+            logger.info(f"Stream written to temporary file. Size: {temp_file_size} bytes")
         except Exception as e:
-            logger.error(f"Failed to write video stream to file: {e}")
-            raise
+            logger.error(f"Failed to process video stream: {e}")
+            return {"status": 500, "message": "Failed to process video stream"}
 
         # Upload file
         try:
-            upload_result = summarization_service.video_upload(tmp_path)
+            if is_search:
+                upload_result = self.summarization_service.video_upload(tmp_path, self.vss_search_url)
+            else:
+                upload_result = self.summarization_service.video_upload(tmp_path, self.vss_summary_url)
+            
+            if not upload_result or "videoId" not in upload_result:
+                return {"status": 500, "message": "Video upload failed - no videoId returned"}
+                
             logger.info(f"Video uploaded, videoId: {upload_result.get('videoId')}")
-            return upload_result["videoId"]
+            return {"status": 200, "message": upload_result["videoId"]}
         except Exception as e:
             logger.error(f"Video upload failed: {e}")
-            raise
+            return {"status": 500, "message": "Video upload failed"}
         finally:
-            logger.info(f"You can view the saved video at: {tmp_path}")
-            # Optional cleanup:
-            # os.remove(tmp_path)
+            try:
+                if os.path.exists(tmp_path):
+                    logger.info(f"Cleaning up temporary file: {tmp_path}")
+                    os.remove(tmp_path)
+            except Exception as e:
+                logger.warning(f"Failed to remove temporary file: {e}")
 
-    
     async def summarize(
         self,
         camera_name: str,
         start_time: float,
         end_time: float
-        ) -> str:
+    ) -> dict:
         logger.info(f"Starting summarization for camera: {camera_name}, "
                     f"start_time: {start_time}, end_time: {end_time}")
 
-        try:
-            video_id = await self.upload_video_to_summarizer(camera_name, start_time, end_time)
-        except Exception as e:
-            logger.error(f"Video processing/upload failed: {e}")
-            raise
+        upload_resp = await self.upload_video_to_summarizer(camera_name, start_time, end_time, False)
+        if upload_resp["status"] != 200:
+            return upload_resp
 
         try:
             payload = SummaryPayload(
-                videoId=video_id,
-                title="sample_summary_1",
-                sampling=Sampling(chunkDuration=8, samplingFrame=3),
+                videoId=upload_resp["message"],
+                title=f"summary_{camera_name}_{int(start_time)}",
+                sampling=Sampling(chunkDuration=8, samplingFrame=8),
                 evam=Evam(evamPipeline="object_detection")
             )
-            pipeline = summarization_service.create_summary(payload)
+            pipeline = self.summarization_service.create_summary(payload, self.vss_summary_url)
+            
+            if not pipeline or "summaryPipelineId" not in pipeline:
+                return {"status": 500, "message": "Summary creation failed - no pipelineId returned"}
+                
             logger.info(f"Summary pipeline created with ID: {pipeline.get('summaryPipelineId')}")
-            return pipeline["summaryPipelineId"]
+            return {"status": 200, "message": pipeline["summaryPipelineId"]}
         except Exception as e:
             logger.error(f"Failed to create summary: {e}")
-            raise
+            return {"status": 500, "message": "Failed to create video summary"}
 
     
     def summary(self, summary_id: str):
         logger.info(f"Fetching summary result for ID: {summary_id}")
         try:
-            result = summarization_service.get_summary_result(summary_id)
+            result = summarization_service.get_summary_result(summary_id, self.vss_summary_url)
         except Exception as e:
             logger.error(f"Failed to retrieve summary: {e}")
             raise
 
         video_summary = result.get("summary")
-        
+
+        # If summary is empty or None, return fallback structure
         if not video_summary:
-            logger.info("Summary not ready yet.")
-            return "Summary is being generated please wait for a while and try again."
-        
+            logger.info("Final summary not ready yet.")
+            logger.info(result)
+            # Extract summarized frames with fallback structure
+            frame_summaries = result.get("frameSummaries", [])
+            simplified_frame_summaries = []
+
+            for frame in frame_summaries:
+                simplified_frame_summaries.append({
+                    "startFrame": frame.get("startFrame"),
+                    "endFrame": frame.get("endFrame"),
+                    "status": frame.get("status"),
+                    "summary": frame.get("summary")
+                })
+
+            return {
+                "summary": "Final summary is being generated please wait for a while.",
+                "frameSummaries": simplified_frame_summaries
+            }
+
         logger.info("Summary retrieved successfully.")
-        return video_summary
+        return {"summary": video_summary}
+
     async def search_embeddings(
         self,
         camera_name: str,
@@ -132,12 +174,14 @@ class VmsService:
         logger.info(f"Starting search_embeddings for camera={camera_name}, start={start_time}, end={end_time}")
 
         try:
-            video_id = await self.upload_video_to_summarizer(camera_name, start_time, end_time)
+            upload_resp = await self.upload_video_to_summarizer(camera_name, start_time, end_time, True)
+            if upload_resp["status"] != 200:
+                return upload_resp
         except Exception as e:
             logger.error(f"Failed to upload video for embedding search: {e}")
             raise
 
-        url = f"{self.base_url}/manager/videos/search-embeddings/{video_id}"
+        url = f"{self.vss_search_url}/manager/videos/search-embeddings/{upload_resp['message']}"
         logger.info(f"Calling search-embeddings API: {url}")
 
         try:
@@ -145,7 +189,7 @@ class VmsService:
             response.raise_for_status()
             message = response.json().get("message", "No message in response.")
             logger.info(f"Embedding search response: {message}")
-            return {video_id: message}
+            return {upload_resp["message"]: message}
         except requests.RequestException as e:
             logger.error(f"Search embeddings API failed: {e}")
             raise

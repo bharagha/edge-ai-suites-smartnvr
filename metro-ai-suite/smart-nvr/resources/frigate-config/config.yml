@@ -7,10 +7,10 @@ mqtt:
   user: frigate
   password: "{FRIGATE_MQTT_PASSWORD}" 
 
-# genai:
-#   enabled: True
-#   provider: openai
-#   model: "Qwen/Qwen2.5-VL-3B-Instruct"
+genai:
+  enabled: True
+  provider: openai
+  model: "Qwen/Qwen2.5-VL-3B-Instruct"
 
 logger:
   default: info
@@ -37,6 +37,7 @@ cameras:
             - record
     detect:
       enabled: true
+      max_disappeared: 30
     objects:
       track: [bicycle, car, motorcycle, person]
       filters:
@@ -56,8 +57,8 @@ cameras:
       use_snapshot: True
       objects:
         - person
+        - car
   
-
   livingroom:
     ffmpeg:
       inputs:
@@ -66,6 +67,9 @@ cameras:
           roles:
             - detect
             - record
+    detect:
+      enabled: true
+      max_disappeared: 30        
     record:
       enabled: true
       retain:
@@ -118,6 +122,10 @@ cameras:
           input_args: -re -stream_loop -1 -fflags +genpts
           roles:
             - detect
+            - record
+    detect:
+      enabled: true
+      max_disappeared: 30      
     record:
       enabled: true
       retain:

@@ -56,10 +56,23 @@ def process_video(camera_name, start_time_input, duration_seconds, action, label
             )
             response.raise_for_status()
             result = response.json()
-            return {"status": "success", "summary_id": result}
+            if result.get("status") != 200:
+                logger.info(result)
+                return {"status": "Failed", "message": result.get("message")}
+            return {"status": "success", "summary_id": result.get("message")}
 
         elif action == "Add to Search":
-            return {"status": "info", "message": "Search not implemented"}
+            response = requests.get(
+                f"{API_BASE_URL}/search-embeddings/{camera_name}",
+                params={"start_time": start_time, "end_time": end_time},
+                timeout=30
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") != 200:
+                logger.info(result)
+                return {"status": "Failed", "message": result.get("message")}
+            return {"status": "success", "response": result.get("message")}
 
         else:
             return {"status": "error", "message": "Unknown action"}

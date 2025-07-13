@@ -8,7 +8,8 @@ from service import redis_store
 from fastapi import Request
 router = APIRouter()
 frigate_service = FrigateService()
-vms_service = VmsService(frigate_service)
+summarization_service = SummarizationService()
+vms_service = VmsService(frigate_service,summarization_service)
 @router.get("/cameras", summary="Get list of camera names")
 async def get_cameras():
     return {"cameras": frigate_service.get_camera_names()}
@@ -62,7 +63,7 @@ async def get_export_video(export_id: str, download: bool = False):
     return await frigate_service.stream_export_video(export_id, download)
 
 @router.get("/summary/{camera_name}", summary="Stream video using clip.mp4 API")
-async def get_clip_video_direct(
+async def summarize_video(
     camera_name: str,
     start_time: float,
     end_time: float,
@@ -71,7 +72,7 @@ async def get_clip_video_direct(
     print("vms service")
     return await vms_service.summarize(camera_name, start_time, end_time)
 @router.get("/search-embeddings/{camera_name}", summary="Stream video using clip.mp4 API")
-async def get_clip_video_direct(
+async def search_video_embeddings(
     camera_name: str,
     start_time: float,
     end_time: float,
@@ -94,16 +95,24 @@ async def get_all_rule_summaries(request: Request):
 
     for rule in rules:
         rule_id = rule["id"]
+        
+        # Skip rules where the action contains "search"
+        if "search" in rule.get("action", "").lower():
+            continue
+
         summary_ids = await get_summary_ids(request, rule_id)
         summaries = {}
 
         for sid in summary_ids:
-            result = await get_summary_result(request, sid)
+            result = vms_service.summary(sid)
+            print('result...............................................................................')
+            print(result)
             summaries[sid] = result or "Pending"
 
         output[rule_id] = summaries
 
     return output
+
 
 @router.get("/rules/search-responses/")
 async def get_search_responses(request: Request):
@@ -116,7 +125,7 @@ async def get_search_responses(request: Request):
         rules = await get_rules(request)  # Fetch all rules
 
         for rule in rules:
-            if rule.get("action") == "search":
+            if rule.get("action") == "add to search":
                 rule_id = rule["id"]
                 results = await get_search_results_by_rule(rule_id, request)
                 output[rule_id] = results or [{"status": "Pending"}]
