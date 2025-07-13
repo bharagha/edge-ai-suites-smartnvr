@@ -23,6 +23,10 @@ RUN pip install --upgrade pip && \
 # Production stage - minimal runtime image
 FROM python:3.11-slim AS production
 
+# Define user and group IDs as build arguments with defaults
+ARG USER_ID=1000
+ARG USER_GROUP_ID=1000
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -31,6 +35,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HOST_API_URL=http://localhost:8000 \
     EVENT_POLL_INTERVAL=10 \
     PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user and group
+RUN groupadd -g ${USER_GROUP_ID} appuser && useradd -m -s /bin/bash -u ${USER_ID} -g ${USER_GROUP_ID} appuser
 
 # Set working directory
 WORKDIR /app
@@ -53,6 +60,12 @@ COPY ui/ /app/ui/
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
+
+# Change ownership of application directory to appuser
+RUN chown -R appuser:appuser /app /opt/venv /entrypoint.sh
+
+# Switch to non-root user
+USER appuser
 
 # Expose ports for both services
 EXPOSE 8000 7860

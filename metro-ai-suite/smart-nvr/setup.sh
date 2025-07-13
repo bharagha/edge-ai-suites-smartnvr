@@ -88,7 +88,7 @@ validate_environment() {
 # Function to start the services
 start_services() {
     HOST_IP=$(get_host_ip)
-    
+    export HOST_IP=$(get_host_ip)
     # Validate environment variables and exit if validation fails
     if ! validate_environment; then
         echo "Error: Environment validation failed. Please set the required variables."
@@ -106,7 +106,6 @@ start_services() {
 # Function to stop the services
 stop_services() {
     echo "Stopping NVR Event Router services..."
-    export HOST_IP=$(get_host_ip)
     docker compose -f docker/compose.yaml down
     echo "All services stopped."
 }

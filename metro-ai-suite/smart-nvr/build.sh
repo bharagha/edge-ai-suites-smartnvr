@@ -1,7 +1,9 @@
 #!/bin/bash
 
-export PROJECT_NAME="nvr-event-router"
-tag="${PROJECT_NAME}:latest"
+# Set default values for IMAGE_NAME and TAG if not provided via environment variables
+IMAGE_NAME="${IMAGE_NAME:-nvr-event-router}"
+TAG="${TAG:-latest}"
+tag="${IMAGE_NAME}:${TAG}"
 
 echo "Building $tag image..."
 
