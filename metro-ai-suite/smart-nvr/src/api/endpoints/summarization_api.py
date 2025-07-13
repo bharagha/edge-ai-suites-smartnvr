@@ -5,8 +5,8 @@ from fastapi.responses import StreamingResponse, FileResponse
 from typing import Optional
 from pathlib import Path
 from model.model import SummaryPayload
-from config import VSS_BASE_URL
 import os
+import json
 from pathlib import Path
 
 # Setup logger
@@ -17,11 +17,10 @@ logging.basicConfig(
 )
 
 class SummarizationService:
-    def __init__(self, base_url: str = VSS_BASE_URL):
-        self.base_url = base_url
-        logger.debug(f"SummarizationService initialized with base_url: {self.base_url}")
+    def __init__(self):
+        logger.debug(f"SummarizationService initialized")
 
-    def video_upload(self, video_path: str) -> dict:
+    def video_upload(self, video_path: str, base_url: str) -> dict:
         logger.debug(f"Starting video upload: {video_path}")
 
         video_path = Path(video_path)  # Ensure consistent use of Path
@@ -38,7 +37,7 @@ class SummarizationService:
                     "video": (video_path.name, video_file, "video/mp4")
                 }
 
-                upload_url = f"{self.base_url}/manager/videos/"
+                upload_url = f"{base_url}/manager/videos/"
                 logger.debug(f"Sending POST request to {upload_url}")
                 
                 response = requests.post(
@@ -64,11 +63,11 @@ class SummarizationService:
             )
 
 
-    def create_summary(self, payload: SummaryPayload) -> dict:
+    def create_summary(self, payload: SummaryPayload, base_url: str) -> dict:
         logger.debug(f"Creating summary for payload: {payload}")
         try:
             response = requests.post(
-                f"{self.base_url}/manager/summary",
+                f"{base_url}/manager/summary",
                 json=payload.dict()
             )
             response.raise_for_status()
@@ -82,14 +81,17 @@ class SummarizationService:
                 detail=f"Failed to create summary: {str(e)}"
             )
 
-    def get_summary_result(self, pipeline_id: str) -> dict:
+    def get_summary_result(self, pipeline_id: str, base_url: str) -> dict:
         logger.debug(f"Fetching summary result for pipeline_id: {pipeline_id}")
         try:
-            response = requests.get(f"{self.base_url}/manager/summary/{pipeline_id}")
+            response = requests.get(f"{base_url}/manager/summary/{pipeline_id}")
             response.raise_for_status()
+
+            json_data = response.json()
             logger.info(f"Summary result fetch successful for pipeline_id: {pipeline_id}")
-            logger.debug(f"Summary result: {response.json()}")
-            return response.json()
+            #logger.debug(f"Summary result JSON: {json.dumps(json_data, indent=2)}")
+
+            return json_data  # ✅ This returns the full parsed response
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to get summary result for pipeline_id {pipeline_id}: {e}")
             raise HTTPException(

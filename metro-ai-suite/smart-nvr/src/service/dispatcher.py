@@ -1,13 +1,16 @@
 from service.vms_service import VmsService
 from service.redis_store import save_summary_id, save_summary_result, save_search
+from api.endpoints.summarization_api import SummarizationService
 from api.endpoints.frigate_api import FrigateService
 import logging
 
 logger = logging.getLogger(__name__)
 frigate_service = FrigateService()
-vms_service = VmsService(frigate_service)
+summarization_service = SummarizationService()
+vms_service = VmsService(frigate_service,summarization_service)
 
 async def dispatch_action(action: str, event: dict):
+    print(f"action : {action} event {event}")
     if action == "summarize":
         try:
             camera_name = event.get("camera")
@@ -18,18 +21,22 @@ async def dispatch_action(action: str, event: dict):
             if not camera_name or start_time is None or end_time is None:
                 raise ValueError("Missing required fields: camera, start_time, or end_time")
 
-            summary_id = await vms_service.summarize(
+            summary_response = await vms_service.summarize(
                 camera_name=camera_name,
                 start_time=start_time,
                 end_time=end_time,
             )
-
+            if summary_response["status"] != 200:
+                logger.info(summary_response)
+                return
+            summary_id = summary_response["message"]
             # Save summary_id under the rule
             await save_summary_id(event["rule_id"], summary_id)
 
             # Retrieve actual summary result (synchronously)
-            summary_result = vms_service.summary(summary_id)
+            summary_result = vms_service.summary(summary_id)['summary']
 
+            logger.info(f'Saving summary result  {summary_result} for summary id {summary_id}')
             # Store summary response
             await save_summary_result(summary_id, summary_result)
 
@@ -42,7 +49,7 @@ async def dispatch_action(action: str, event: dict):
             logger.error(f"❌ Summarize action failed: {e}")
             return {"error": str(e)}
 
-    elif action == "search":
+    elif action == "add to search":
         try:
             camera_name = event.get("camera")
             start_time = event.get("start_time")

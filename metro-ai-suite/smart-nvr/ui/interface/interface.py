@@ -74,32 +74,55 @@ def poll_summary_status(summary_id, status_output, stop_event):
     while not stop_event.is_set():
         try:
             raw_response = fetch_summary_status(summary_id)
-
-            # If the response is a JSON string, parse it
+            logger.info(f"raw_response : {raw_response}")
             if isinstance(raw_response, str):
+                if not raw_response.strip():
+                    logger.warning(f"Empty response for summary_id={summary_id}")
+                    raise ValueError("Empty response received from fetch_summary_status.")
+                logger.info(f"raw_response : {raw_response}")
                 response = json.loads(raw_response)
+            elif isinstance(raw_response, dict):
+                response = raw_response
             else:
-                response = raw_response  # already a dict
+                raise ValueError(f"Invalid response type: {type(raw_response)}")
 
             status = response.get("status", "unknown")
             logger.info(f"Polled summary {summary_id} status: {status}")
-            status_output.update(value=f"Status: {status}")
+
+            # Safely update the status_output (Gradio Textbox)
+            if hasattr(status_output, "update"):
+                status_output.update(value=response)
 
             if status in ("completed", "failed"):
                 break
 
         except Exception as e:
             logger.error(f"Error polling summary status: {e}", exc_info=True)
-            status_output.update(value="Error fetching status")
+            if hasattr(status_output, "update"):
+                status_output.update(value="Error fetching status")
             break
 
         time.sleep(10)
+
+def extract_summary_id(raw_id):
+    if not raw_id:
+        return None
+    if isinstance(raw_id, dict):
+        return list(raw_id.keys())[0]
+    return raw_id
+
+
 def process_and_poll(camera, start, duration, action, status_output):
     result = process_video(camera, start, duration, action)
-    summary_id = result.get("summary_id")
+    print('Printing result ..............................')
+    print(result)
+    if action == "Add to Search":
+        return result
+    raw_id = result.get("summary_id")
+    summary_id = extract_summary_id(raw_id)
+    print(polling_threads)
 
     if result["status"] == "success" and summary_id:
-        # Stop any previous polling
         if summary_id in polling_threads:
             polling_threads[summary_id]["stop"].set()
 
@@ -113,16 +136,21 @@ def process_and_poll(camera, start, duration, action, status_output):
         polling_threads[summary_id] = {"thread": thread, "stop": stop_event}
 
     return result
+
 def create_ui():
     camera_list = fetch_cameras()
     recent_events = []
     def format_summary_responses():
         data = fetch_rule_responses()
         rows = []
+        print("data..............................................................")
+        print(data)
         for rule_id, summaries in data.items():
             if summaries:
                 for summary_id, message in summaries.items():
-                    rows.append([rule_id, summary_id, message])
+                    print('message -----------------------------------------------------------------------------')
+                    print(message)
+                    rows.append([rule_id, summary_id, message['summary']])
             else:
                 rows.append([rule_id, "", "No summaries available."])
         return rows
@@ -141,6 +169,7 @@ def create_ui():
     with gr.Blocks() as ui:
         gr.Markdown("## NVR Event Router")
         gr.Markdown("Monitor and process events from Frigate VMS using OEP Video Search and Summarization Application.")
+        summary_id_state = gr.State(None)
         with gr.Tabs():
             # Tab 1: Summarize/Search
             with gr.TabItem("Summarize/Search Clips"):
@@ -157,13 +186,66 @@ def create_ui():
                         process_btn = gr.Button("Process Video")
 
                 with gr.Row():
-                    result = gr.JSON()
-                    status_output = gr.Textbox(label="Summary Status", interactive=False)
-                    status_state = gr.State("Waiting...")  # or just gr.State()
+                        status_output = gr.Textbox(label="Summary Status", interactive=False, scale=5)
+                        refresh_status_btn = gr.Button("🔄 Refresh Summary Status", scale=1)
+                result = gr.JSON(visible=False)
+                with gr.Row():
+                    toast_output = gr.Textbox(visible=False, interactive=False, label="Status Message", scale=5)
+                    close_toast_btn = gr.Button("❌", visible=False, scale=1)
+
+                # Function to hide toast and close button
+                def dismiss_toast():
+                    return gr.update(visible=False), gr.update(visible=False)
+                # When toast is shown, make both visible
+                def wrapper_fn(camera, start, duration, action, status_output_box, previous_summary_id):
+                    result_dict = process_and_poll(camera, start, duration, action, status_output_box)
+                    print("Result from process_and_poll:", result_dict)
+                    
+                    message = result_dict.get("message", json.dumps(result_dict, indent=2))
+                    print("Action selected:", action)
+
+                    if action == 'Summarize':
+                        raw_summary = result_dict.get("summary_id")
+                        summary_id = extract_summary_id(raw_summary)
+                        print("Extracted Summary ID:", summary_id)
+                        return (
+                            result_dict,
+                            gr.update(value=message, visible=True),
+                            gr.update(visible=True),
+                            summary_id
+                        )
+                    else:
+                        return (
+                            result_dict,
+                            gr.update(value=message, visible=True),
+                            gr.update(visible=True),
+                            previous_summary_id # preserve last summary_id_state
+                        )
+
+
                 process_btn.click(
-                    fn=process_and_poll,
-                    inputs=[cam_dropdown, start_input, duration_input, action_dropdown, status_state],
-                    outputs=[result]
+                    fn=wrapper_fn,
+                    inputs=[cam_dropdown, start_input, duration_input, action_dropdown, status_output,summary_id_state],
+                    outputs=[result, toast_output, close_toast_btn, summary_id_state]
+                )
+
+                close_toast_btn.click(
+                    fn=dismiss_toast,
+                    inputs=[],
+                    outputs=[toast_output, close_toast_btn]
+                )
+
+                # Function to manually refresh summary status
+                def refresh_summary_status(summary_id):
+                    if not summary_id:
+                        return "No summary ID available"
+                    response = fetch_summary_status(summary_id)
+                    return json.dumps(response, indent=2)
+
+                refresh_status_btn.click(
+                    fn=refresh_summary_status,
+                    inputs=[summary_id_state],
+                    outputs=[status_output]
                 )
 
             # Tab 2: AI-Powered Event Viewer
@@ -217,44 +299,111 @@ def create_ui():
 
 
             # Tab 3: Auto-Route Rules
-            with gr.TabItem("Auto-Route Events to AI Search"):
+            with gr.TabItem("Auto-Route Events"):
                 with gr.Row():
                     camera_dropdown = gr.Dropdown(choices=camera_list, label="Select Camera")
                     label_filter = gr.Dropdown(choices=["all", "person", "car", "animal"], value="all", label="Detection Labels")
                     action_dropdown_auto = gr.Dropdown(choices=["Summarize", "Add to Search"], value="Summarize", label="Select Action")
+                    add_rule_btn = gr.Button("➕ Add Rule")
+
+                with gr.Row():
                     add_rule_alert = gr.Textbox(label="Status", visible=False)
 
-                    gr.Button("➕ Add Rule").click(
-                        fn=add_rule,
-                        inputs=[camera_dropdown, label_filter, action_dropdown_auto],
-                        outputs=[add_rule_alert]
-                    )
+                # 🔘 Callback to add rule and show alert
+                def add_rule_callback(camera, label, action):
+                    resp = add_rule(camera, label, action)
+                    print(resp)
+                    message = resp
+                    return gr.update(value=message, visible=True)
 
-                    # Optional: automatically show textbox when response is returned
-                    def show_alert(resp: dict):
-                        return resp.get("message", "No response"), gr.update(visible=True)
+                # ⏳ Hide alert after delay
+                def delayed_hide():
+                    time.sleep(5)
+                    return gr.update(visible=False)
 
-                    add_rule_alert.change(
-                        fn=show_alert,
-                        inputs=[add_rule_alert],
-                        outputs=[add_rule_alert]
-                    )
+                # 🚀 Show alert on rule add
+                    # 🔘 Combined logic: show message, sleep, hide
+                def add_rule_with_auto_hide(camera, label, action):
+                    resp = add_rule(camera, label, action)
+                    print(resp)
+                    message = resp.get("message") if isinstance(resp, dict) else str(resp)
 
-                gr.Markdown("### Current Rules")
-
-                rules_table = gr.Dataframe(
-                    headers=["ID", "Camera", "Label", "Action"],
-                    datatype=["str", "str", "str", "str"],
-                    interactive=False
+                    # Show message
+                    yield gr.update(value=message, visible=True)
+                    
+                    # Keep it visible for 5 seconds
+                    time.sleep(3)
+                    
+                    # Hide message
+                    yield gr.update(visible=False)
+                add_rule_btn.click(
+                    fn=add_rule_with_auto_hide,
+                    inputs=[camera_dropdown, label_filter, action_dropdown_auto],
+                    outputs=[add_rule_alert]
                 )
 
+                # ⏱️ Automatically hide after 5 seconds
+                # add_rule_event.then(
+                #     fn=delayed_hide,
+                #     inputs=[],
+                #     outputs=[add_rule_alert]
+                # )
+                
+                # Rules Table Section
+                gr.Markdown("### Current Rules")
+                delete_status = gr.Textbox(label="Deletion Status", visible=False)
+                rules_table = gr.Dataframe(
+                    headers=["ID", "Camera", "Label", "Action", "Delete"],
+                    datatype=["str", "str", "str", "str", "str"],
+                    interactive=False
+                )
+                refresh_rules_btn = gr.Button("🔄 Refresh Rules")
+                
                 def load_rules():
                     rules = fetch_rules()
-                    return [[r["id"], r["camera"], r["label"], r["action"]] for r in rules]
-
-                refresh_rules_btn = gr.Button("🔄 Refresh Rules")
-                refresh_rules_btn.click(fn=load_rules, outputs=[rules_table])
-
+                    return [[r["id"], r["camera"], r["label"], r["action"], "🗑️ Delete"] for r in rules]
+                def delete_selected_rule(evt: gr.SelectData):
+                    print(f"Full SelectData object: {evt}")
+                    print(f"Clicked value: {evt.value}")
+                    print(f"Clicked index (row, col): {evt.index}")
+                    
+                    if evt.value == "🗑️ Delete":
+                        try:
+                            # Get the full row data from row_value
+                            selected_row = evt.row_value
+                            print(f"Selected row data: {selected_row}")
+                            
+                            # Extract rule ID (first column)
+                            rule_id = selected_row[0]
+                            print(f"Rule ID to delete: {rule_id}")
+                            
+                            # Delete the rule
+                            result = delete_rule_by_id(rule_id)
+                            return result, load_rules()
+                            
+                        except Exception as e:
+                            logger.error(f"Error deleting rule: {str(e)}")
+                            return f"❌ Error: {str(e)}", load_rules()
+                    
+                    return "Click the delete icon (🗑️) to remove a rule", load_rules()
+                            
+                
+                # Event handlers
+                refresh_rules_btn.click(
+                    fn=load_rules,
+                    outputs=[rules_table]
+                )
+                
+                rules_table.select(
+                    fn=delete_selected_rule,
+                    outputs=[delete_status, rules_table]
+                )
+                
+                # Initial load
+                ui.load(
+                    fn=load_rules,
+                    outputs=[rules_table]
+                )
                 gr.Markdown("### Rule Responses")
 
                 summary_response_table = gr.Dataframe(

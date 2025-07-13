@@ -8,12 +8,12 @@ services:
       - nvr-network
     ports:
       - "5000:5000" 
-    healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:5000/api/stats"]
-          interval: 1m
-          timeout: 10s
-          retries: 3
-          start_period: 40s
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+    #   interval: 1m
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
     devices:
       - /dev/dri/card0:/dev/dri/card0
     volumes:
@@ -28,9 +28,9 @@ services:
        mqtt-broker:
          condition: service_healthy
     environment:
-      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_IP}, ${VLM_MODEL_IP}
+      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
       FRIGATE_MQTT_PASSWORD: ${MQTT_PASSWORD} 
-      OPENAI_BASE_URL: "http://${VLM_MODEL_IP}:${VLM_MODEL_PORT}"
+      OPENAI_BASE_URL: "http://${VLM_MODEL_IP}:${VLM_MODEL_PORT}/v1"
       OPENAI_API_KEY: "your_openai_api_key" 
   
   nvr-event-router:
@@ -49,7 +49,9 @@ services:
     volumes:
       - ../src:/app
     depends_on:
-      frigate:
+      # frigate:
+      #   condition: service_healthy
+      mqtt-broker:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -58,10 +60,12 @@ services:
     environment:
       MODE: "backend"
       FRIGATE_BASE_URL: "http://${FRIGATE_IP}:${FRIGATE_PORT}"
-      VSS_BASE_URL: "http://${VSS_IP}:${VSS_PORT}"
-      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_IP}, ${VLM_MODEL_IP}
+      VSS_SEARCH_URL: "http://${VSS_SEARCH_IP}:${VSS_SEARCH_PORT}"
+      VSS_SUMMARY_URL: "http://${VSS_SUMMARY_IP}:${VSS_SUMMARY_PORT}"
+      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_SEARCH_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
       MQTT_USER: ${MQTT_USER}
       MQTT_PASSWORD: ${MQTT_PASSWORD} 
+      HOST_IP: ${HOST_IP}
 
   nvr-event-router-ui:
     container_name: nvr-event-router-ui
@@ -77,7 +81,7 @@ services:
       MODE: "ui" # Service-to-service communication uses Docker DNS
       API_BASE_URL: "http://${HOST_IP}:8000"        # For external API access
       EVENT_POLL_INTERVAL: "10"
-      no_proxy: ${no_proxy}, frigate, nvr-event-router, ${FRIGATE_IP}, ${VSS_IP}, ${VLM_MODEL_IP}
+      no_proxy: ${no_proxy}, frigate, nvr-event-router, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
       
   mqtt-broker:
     image: eclipse-mosquitto:2.0.21
@@ -97,6 +101,8 @@ services:
       sh -c "
         touch /mosquitto/config/pwfile &&
         mosquitto_passwd -c -b /mosquitto/config/pwfile $${MQTT_USER} $${MQTT_PASSWORD} &&
+        chmod 0700 /mosquitto/config/pwfile &&
+        chown mosquitto:mosquitto /mosquitto/config/pwfile &&
         mosquitto -c /mosquitto/config/mosquitto.conf
       "
     healthcheck:

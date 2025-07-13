@@ -48,14 +48,26 @@ validate_environment() {
     fi
     
     # Check for VSS IP and port
-    if [ -z "${VSS_IP}" ]; then
-        echo "Error: VSS_IP environment variable is required"
+    if [ -z "${VSS_SUMMARY_IP}" ]; then
+        echo "Error: VSS_SUMMARY_IP environment variable is required"
         echo "Please set it to the IP address of your Video Summarization Service"
         return 1
     fi
     
-    if [ -z "${VSS_PORT}" ]; then
-        echo "Error: VSS_PORT environment variable is required"
+    if [ -z "${VSS_SUMMARY_PORT}" ]; then
+        echo "Error: VSS_SUMMARY_PORT environment variable is required"
+        echo "Please set it to the port of your Video Summarization Service (typically 12345)"
+        return 1
+    fi
+    # Check for VSS IP and port
+    if [ -z "${VSS_SEARCH_IP}" ]; then
+        echo "Error: VSS_SEARCH_IP environment variable is required"
+        echo "Please set it to the IP address of your Video Summarization Service"
+        return 1
+    fi
+    
+    if [ -z "${VSS_SEARCH_PORT}" ]; then
+        echo "Error: VSS_SEARCH_PORT environment variable is required"
         echo "Please set it to the port of your Video Summarization Service (typically 12345)"
         return 1
     fi
