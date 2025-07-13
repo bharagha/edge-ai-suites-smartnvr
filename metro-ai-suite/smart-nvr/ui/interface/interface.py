@@ -13,7 +13,6 @@ import json
 camera_list = []
 recent_events = []
 # Global state
-camera_list = []
 recent_events = []
 event_update_thread = None
 stop_event_thread = threading.Event()
@@ -138,6 +137,7 @@ def process_and_poll(camera, start, duration, action, status_output):
     return result
 
 def create_ui():
+    time.sleep(10)  # Ensure the environment is fully initialized
     camera_list = fetch_cameras()
     recent_events = []
     def format_summary_responses():

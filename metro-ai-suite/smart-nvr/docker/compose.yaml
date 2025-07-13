@@ -8,14 +8,12 @@ services:
       - nvr-network
     ports:
       - "5000:5000" 
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:5000/"]
-    #   interval: 1m
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
-    devices:
-      - /dev/dri/card0:/dev/dri/card0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 1m
+      timeout: 20s
+      retries: 3
+      start_period: 40s
     volumes:
       - ../resources/frigate-config:/config
       - /etc/localtime:/etc/localtime:ro
@@ -30,6 +28,7 @@ services:
     environment:
       no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
       FRIGATE_MQTT_PASSWORD: ${MQTT_PASSWORD} 
+      FRIGATE_MQTT_USER: ${MQTT_USER}
       OPENAI_BASE_URL: "http://${VLM_MODEL_IP}:${VLM_MODEL_PORT}/v1"
       OPENAI_API_KEY: "your_openai_api_key" 
   
@@ -49,8 +48,8 @@ services:
     volumes:
       - ../src:/app
     depends_on:
-      # frigate:
-      #   condition: service_healthy
+      frigate:
+        condition: service_healthy
       mqtt-broker:
         condition: service_healthy
       redis:
@@ -78,8 +77,8 @@ services:
     ports:
       - "7860:7860"
     environment:
-      MODE: "ui" # Service-to-service communication uses Docker DNS
-      API_BASE_URL: "http://${HOST_IP}:8000"        # For external API access
+      MODE: "ui" 
+      API_BASE_URL: "http://${HOST_IP}:8000" 
       EVENT_POLL_INTERVAL: "10"
       no_proxy: ${no_proxy}, frigate, nvr-event-router, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
       
