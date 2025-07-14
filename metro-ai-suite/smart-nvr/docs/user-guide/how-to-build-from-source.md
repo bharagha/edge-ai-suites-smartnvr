@@ -1,57 +1,60 @@
-# Build and Deploy Using Docker Compose
+# How to Build from Source
 
-This guide provides step-by-step instructions to build and deploy the Smart NVR Sample Application using Docker Compose. You'll learn how to:
-- Build the required images for the application.
-- Start the application and ensure all services are running.
-- Verify the deployment to confirm the application is functioning correctly.
+This comprehensive guide provides detailed instructions for building the Smart NVR application container images from source code. Whether you're a developer looking to customize the application or troubleshoot issues, this guide will walk you through the complete build and deployment process.
 
-Docker Compose simplifies the deployment process by managing multiple containers as a single application. For more details, see [Docker Compose Documentation](https://docs.docker.com/compose/).
+## Overview
 
-## Setup the environment variables
-- Setup the following environment variables
-  ```bash
-  export FRIGATE_IP=<frigate-ip-address> #IP address of the Frigate VMS (required)
-  export FRIGATE_PORT=<frigate-port> #Port of the Frigate VMS (required, typically 5000)
-  export VSS_SUMMARY_IP=<vss-ip-address> #IP address of the Video Summarization service (required)
-  export VSS_SUMMARY_PORT=<vss-port> #Port of the Video Summarization service (required, typically 12345)
-  export VSS_SEARCH_IP=<vss-ip-address> #IP address of the Video Search service (required)
-  export VSS_SEARCH_PORT=<vss-port> #Port of the Video Search service (required, typically 12345)
-  export VLM_MODEL_IP=<vlm-model-end-point-ip-address> #IP address of the VLM Model Endpoint (required)
-  export VLM_MODEL_PORT=<vlm-model-end-point-port> #Port of the VLM Model Endpoint (required, typically 9766)
-  export MQTT_USER=frigate           
-  export MQTT_PASSWORD=mqtt 
-  export HOST_IP=<host-ip>  # It's the IP address where the NVR Event Router will run
+The Smart NVR application consists of multiple components that work together to provide GenAI-powered video analytics:
 
-  ```
+- **NVR Event Router**: Core backend service that processes events and coordinates between services.
+- **UI Component**: Gradio-based web interface for interacting with the system.
+- **Frigate VMS**: Video management system for object detection and video processing.
+- **MQTT Broker**: Message broker for inter-service communication.
+- **Redis**: In-memory data store for caching and managing rules.
 
-## Build the images
-Clone the repository if not already done.
+
+## Step 1: Clone the Repository
+
+First, clone the repository and navigate to the Smart NVR directory:
+
 ```bash
 git clone https://github.com/open-edge-platform/edge-ai-suites.git
 cd edge-ai-suites/metro-ai-suite/smart-nvr
 ```
 
-A script is provided to ease the task of building the images as well manage the built images. Run the following command to build the image.
+## Step 2: Build the Docker Images
+
+The application provides a build script to simplify the image building process:
+
 ```bash
-./run.sh build
+./build.sh
 ```
 
-## Run the application
-The script provides an option to start all the required services.
-  ```bash
-  ./run.sh start
-  ```
+### What the Build Script Does
 
-To stop the application at any point of time, the same script can be used as follows.
-  ```bash
-  ./run.sh stop
-  ```
+The `build.sh` script performs the following operations:
 
-Verify the Application: Check that the application is running:
+1. **Sets Default Values**: Uses `intel/nvr-event-router:latest` as the default image name and tag
+2. **Configures Proxy Settings**: Automatically passes through proxy environment variables if set
+3. **Builds Docker Image**: Creates the Docker image using the Dockerfile in the `docker/` directory
+4. **Validates Build**: Confirms the image was built successfully
+
+### Customizing the Build
+
+You can customize the build process by setting environment variables:
+
 ```bash
-docker compose ps
+# Custom image name and tag
+export IMAGE_NAME="my-registry/nvr-event-router"
+export TAG="v1.0.0"
+./build.sh
 ```
 
 ## What to Do Next
-- **[Troubleshooting Docker Deployments](./support.md#troubleshooting-docker-deployments)**: Find detailed steps to resolve common issues during Docker deployments.
-- **[Get Started](./get-started.md)**: Ensure you have completed the initial setup steps before proceeding.
+
+- **[Get Started](./get-started.md)**: Complete the initial setup and configuration steps
+- **[How to Use the Application](./how-to-use-application.md)**: Learn about the application's features and functionality
+- **[API Reference](./api-reference.md)**: Explore the available REST API endpoints
+- **[Troubleshooting](./support.md#troubleshooting-docker-deployments)**: Find solutions to common deployment issues
+- **[System Requirements](./system-requirements.md)**: Review hardware and software requirements
+

@@ -53,7 +53,6 @@ The diagram shows the key components of the Smart NVR application. The descripti
 
 - [System Requirements](./system-requirements.md): Check the hardware and software requirements for deploying the application.
 - [Get Started](./get-started.md): Follow step-by-step instructions to set up the application.
-- [How to Deploy with Helm](./how-to-deploy-helm.md): How to deploy the application using Helm on a Kubernetes cluster.
 - [How to build from source](./how-to-build-from-source.md): How to build and deploy the application using Docker Compose.
 - [How to Use the Application](./how-to-use-application.md): Explore the application's features and verify its functionality.
 - [Support and Troubleshooting](./support.md): Find solutions to common issues and troubleshooting steps.

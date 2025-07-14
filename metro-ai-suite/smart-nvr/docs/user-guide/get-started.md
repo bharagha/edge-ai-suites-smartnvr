@@ -1,74 +1,88 @@
-# Get Started
+# Smart NVR - Getting Started
 
-<!--
-**Sample Description**: Provide a brief overview of the application and its purpose.
--->
-The Smart NVR sample application brings GenAI-powered vision analytics to traditional network video recorders, enabling intelligent event detection and real-time insights directly at the edge. With this guide, you’ll quickly deploy, configure, and experience advanced video analytics capabilities that help you manage and extract value from your video data.
+## Overview
+
+Smart NVR is a GenAI-powered video analytics application that enhances traditional network video recorders with intelligent event detection and real-time insights at the edge. This guide will help you quickly deploy and configure the application to start extracting valuable insights from your video data.
 
 ## Prerequisites
-- Verify that your system meets the [Minimum Requirements](./system-requirements.md).
-- Install Docker: [Installation Guide](https://docs.docker.com/get-docker/).
-- Enable running docker without "sudo": [Post Install](https://docs.docker.com/engine/install/linux-postinstall/)
-- Install Git: [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Start Frigate NVR by referring to this [guide]()
 
-<!--
-**Setup and First Use**: Include installation instructions, basic operation, and initial validation.
--->
-## Set up and First Use
+### System Requirements
+- System must meet [minimum requirements](./system-requirements.md)
+- Docker installed ([Installation Guide](https://docs.docker.com/get-docker/))
+- Docker configured to run without sudo ([Post-install guide](https://docs.docker.com/engine/install/linux-postinstall/))
+- Git installed ([Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git))
 
-<!--
-**User Story 1**: Setting Up the Application  
-- **As a developer**, I want to set up the application in my environment, so that I can start exploring its functionality.
+### Required Services
+Ensure these services are running before setting up Smart NVR:
 
-**Acceptance Criteria**:
-1. Step-by-step instructions for downloading and installing the application.
-2. Verification steps to ensure successful setup.
-3. Troubleshooting tips for common installation issues.
--->
+- **VLM Microservice**: Must be running on a device connected to the NVR
+- **VSS (Video Search and Summarization) Services**:
+  - **VSS Search**: Running on one device for video search functionality
+  - **VSS Summary**: Running on a separate device for video summarization
+  - 📖 [VSS Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/sample-applications/video-search-and-summarization/docs/user-guide/get-started.md)
 
-1. **Clone the Repository**:
-   - Run the following command to create a local repo.
-     ```bash
-     git clone https://github.com/open-edge-platform/edge-ai-suites.git
-     cd edge-ai-suites/metro-ai-suite/smart-nvr
-     ```
+## Quick Start
 
-2. **Setup required environment variables**:
-   - Setup the following environment variables
-     ```bash
-     export FRIGATE_IP=<frigate-ip-address> #IP address of the Frigate VMS (required)
-     export FRIGATE_PORT=<frigate-port> #Port of the Frigate VMS (required, typically 5000)
-     export VSS_IP=<vss-ip-address> #IP address of the Video Search and Summarization service (required)
-     export VSS_PORT=<vss-port> #Port of the Video Search and Summarization service (required, typically 12345)
-     export VLM_MODEL_IP=<vlm-model-end-point-ip-address> #IP address of the VLM Model Endpoint (required)
-     export VLM_MODEL_PORT=<vlm-model-end-point-port> #Port of the VLM Model Endpoint (required, typically 9766)
-     ```
-   - Setup the registry details
-     ```bash
-     export REGISTRY="intel/"
-     ```
+### 1. Clone the Repository
 
-3. **Pull images from registry**:
-   
+```bash
+git clone https://github.com/open-edge-platform/edge-ai-suites.git
+cd edge-ai-suites/metro-ai-suite/smart-nvr
+```
+> **Note**: This release uses a build script that directly builds the Docker images. Follow the [setup process](./how-to-build-from-source.md) to build the image before running the application.
 
-4. **Start the Application**:
-   Start the application using Docker Compose:
+### 2. Configure Environment Variables
 
-   ```bash
-   docker compose up
-   ```
+Set up the required environment variables:
 
-5. **Verify the Application**:
-   Check that the application is running:
+```bash
 
-   ```bash
-   docker ps
-   ```
+# Video Search and Summarization Services
+export VSS_SUMMARY_IP=<vss-summary-ip>         # Required
+export VSS_SUMMARY_PORT=<vss-summary-port>     # Required (typically 12345)
+export VSS_SEARCH_IP=<vss-search-ip>           # Required
+export VSS_SEARCH_PORT=<vss-search-port>       # Required (typically 12345)
 
-6. **Access the Application**:
-   Open a browser and go to `http://<host-ip>:7860` to access the application.
+# VLM Model Endpoint
+export VLM_SERVING_IP=<vlm-serving-ip>             # Required
+export VLM_SERVING_PORT=<vlm-serving-port>         # Required (typically 9766)
 
-## Supporting Resources
-- [How to Deploy with Helm](./how-to-deploy-helm.md): How to deploy the application using Helm on a Kubernetes cluster.
-- [How to build from source](./how-to-build-from-source.md): How to build and deploy the application using Docker Compose.
+# MQTT Configuration
+export MQTT_USER=<mqtt-username>               # Required
+export MQTT_PASSWORD=<mqtt-password>           # Required
+
+```
+
+### 3. Start the Application
+
+Launch all services using the setup script:
+
+```bash
+./setup.sh start
+```
+
+This will start all required services as shown below:
+
+![Services overview](./_images/containers.png)
+
+### 4. Access the Application
+
+Open your browser and navigate to:
+```
+http://<host-ip>:7860
+```
+
+### 5. Stop the Application
+
+To stop all services:
+
+```bash
+./setup.sh stop
+```
+
+## Next Steps
+
+- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./support.md#troubleshooting-docker-deployments),
+
+
+---

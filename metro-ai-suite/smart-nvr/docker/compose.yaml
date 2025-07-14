@@ -26,10 +26,10 @@ services:
        mqtt-broker:
          condition: service_healthy
     environment:
-      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
+      no_proxy: ${no_proxy}, frigate, ${VSS_SUMMARY_IP}, ${VLM_SERVING_IP}
       FRIGATE_MQTT_PASSWORD: ${MQTT_PASSWORD} 
       FRIGATE_MQTT_USER: ${MQTT_USER}
-      OPENAI_BASE_URL: "http://${VLM_MODEL_IP}:${VLM_MODEL_PORT}/v1"
+      OPENAI_BASE_URL: "http://${VLM_SERVING_IP}:${VLM_SERVING_PORT}/v1"
       OPENAI_API_KEY: "your_openai_api_key" 
   
   nvr-event-router:
@@ -58,10 +58,10 @@ services:
       - "8000:8000" 
     environment:
       MODE: "backend"
-      FRIGATE_BASE_URL: "http://${FRIGATE_IP}:${FRIGATE_PORT}"
+      FRIGATE_BASE_URL: "http://frigate:5000"
       VSS_SEARCH_URL: "http://${VSS_SEARCH_IP}:${VSS_SEARCH_PORT}"
       VSS_SUMMARY_URL: "http://${VSS_SUMMARY_IP}:${VSS_SUMMARY_PORT}"
-      no_proxy: ${no_proxy}, frigate, ${FRIGATE_IP}, ${VSS_SEARCH_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
+      no_proxy: ${no_proxy}, frigate, ${VSS_SEARCH_IP}, ${VSS_SUMMARY_IP}, ${VLM_SERVING_IP}
       MQTT_USER: ${MQTT_USER}
       MQTT_PASSWORD: ${MQTT_PASSWORD} 
       HOST_IP: ${HOST_IP}
@@ -80,7 +80,7 @@ services:
       MODE: "ui" 
       API_BASE_URL: "http://${HOST_IP}:8000" 
       EVENT_POLL_INTERVAL: "10"
-      no_proxy: ${no_proxy}, frigate, nvr-event-router, ${FRIGATE_IP}, ${VSS_SUMMARY_IP}, ${VLM_MODEL_IP}
+      no_proxy: ${no_proxy}, frigate, nvr-event-router, ${VSS_SUMMARY_IP}, ${VLM_SERVING_IP}
       
   mqtt-broker:
     image: eclipse-mosquitto:2.0.21

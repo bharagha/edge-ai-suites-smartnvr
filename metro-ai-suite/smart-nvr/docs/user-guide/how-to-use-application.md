@@ -1,30 +1,88 @@
-# How to Use the Application
+# How to Use the Smart NVR Application
 
-Once deployed (via Docker Compose or Helm) this guide will help you:
-- Verify that the application is running correctly.
-- Access the application's features and user interfaces.
-- Understand how to interact with the various components of the Smart Intersection Sample Application.
+This guide helps you verify deployment, access the application features, and interact with the Smart NVR components.
 
-By following this guide, you will be able to explore the application's capabilities, such as real-time traffic monitoring, data visualization, and system management.
+## Accessing the Application
 
-## **Access the Application and Components** ##
+### Application URL
 
-### **Application UI** ###
+Open your browser and navigate to:
 
-Open a browser and go to the following endpoints to access the application. Use `<actual_ip>` instead of `localhost` for external access:
+- **Local access**: [https://localhost:7860](https://localhost:7860)
+- **External access**: Replace `localhost` with your server's IP address
 
-- **URL**: [https://localhost](https://localhost)
+### Important Notes
 
-> **Notes**:
-> - After starting the application, wait approximately 1 minute for the MQTT broker to initialize. You can confirm it is ready when green arrows appear for MQTT in the application interface. Since the application uses HTTPS, your browser may display a self-signed certificate warning. 
-> - For the best experience, it is recommended to use **Google Chrome**.
+- **Initialization**: Wait few seconds after startup for the MQTT broker to initialize.
+- **Recommended Browser**: Google Chrome for optimal experience.
 
-## Verify the Application
+## Application Overview
 
+After successful deployment, you'll see the main landing page:
 
-## Resources
+![Landing page](./_images/Landing-page.png)
 
-- **[Troubleshooting Guide](./support.md)**: Find detailed steps to resolve common issues during deployments.
-- **[Get Started](./get-started.md)**: Ensure you have completed the initial setup steps.
-- **[Deploy Using Docker Compose](./how-to-build-from-source.md)**: Ensure you have used Docker Compose to quickly set up and run the application in a containerized environment.
-- **[Deploy Using Helm](./how-to-deploy-helm.md)**: Ensure you have used Helm to deploy the application to a Kubernetes cluster for scalable and production-ready deployments.
+### Core Features
+
+The Smart NVR application provides three main functionalities:
+
+#### 1. **Video Summarization & Search**
+
+Search and summarize video clips efficiently using AI-powered analysis.
+
+This feature enables users to leverage AI-powered video analysis for intelligent content discovery and summarization. Key capabilities include:
+
+- **Timestamp-based Video Selection**: Select specific timestamps from Frigate NVR recordings to analyze particular time periods of interest
+- **Flexible Duration Control**: Define custom video clip lengths starting from your selected timestamp to focus on relevant events
+- **AI-Powered Search Integration**: Automatically send selected video clips to the VSS (Video Search Service) search endpoint to expand your searchable video database
+- **Intelligent Summarization**: Generate concise, AI-driven summaries of video content to quickly understand key events and activities
+- **Pipeline Status Monitoring**: Track the progress and status of video processing operations in real-time
+- **Seamless Frigate Integration**: Automatically retrieves video clips from Frigate NVR if they exist in the system
+
+The application intelligently fetches video clips from the Frigate NVR system and processes them through advanced AI pipelines for both search indexing and content summarization.
+
+![AI-events](./_images/summary_final.png)
+
+---
+
+#### 2. **AI-Powered Event Viewer**
+
+Get intelligent summaries of detected objects and events in your video streams.
+
+This feature provides real-time AI analysis and description of events as they occur across your camera network:
+
+- **Vision Language Model Integration**: Connects to advanced VLM (Vision Language Model) services to provide natural language descriptions of visual events
+- **Multi-Camera Support**: Select and monitor events from multiple cameras through an intuitive interface
+- **Real-time Event Processing**: Automatically processes and analyzes events as they are detected by the NVR system
+- **Detailed Event Descriptions**: Generates human-readable descriptions of detected objects, activities, and behaviors
+- **Interactive Event Timeline**: Browse through historical events with AI-generated descriptions for each occurrence
+- **Contextual Analysis**: Provides not just object detection but contextual understanding of what's happening in the scene
+
+The system leverages the NVR's built-in detection capabilities and enhances them with AI-powered scene understanding to provide meaningful insights into your video surveillance data.
+
+![AI-events](./_images/AI-events.png)
+
+---
+
+#### 3. **Automated Event Routing**
+
+Create custom rules and workflows for event handling and notifications.
+
+This powerful automation feature enables intelligent event management and workflow creation:
+
+- **Rule-Based Event Processing**: Create custom rules that automatically trigger actions based on specific detection criteria
+- **MQTT Broker Integration**: Seamlessly connects to NVR systems via MQTT for real-time event communication
+- **VSS Search Integration**: Automatically add relevant event clips to your searchable video database based on predefined rules
+- **VSS Summary Integration**: Automatically summarize relevant event clips as per the defined rules
+- **Flexible Rule Configuration**: Set up complex rules combining camera selection, object types and VSS integration
+- **Multi-Camera Rule Support**: Configure different rules for different cameras across your entire camera network
+
+**Example Use Case**: Configure a rule for Camera 1 to detect person events and automatically send those clips to the search space. Once activated, all person detection events from Camera 1 will be automatically processed and added to your searchable video archive without manual intervention.
+
+![Event-router](./_images/summary_event_response.png)
+
+## Additional Resources
+
+- **[Troubleshooting Guide](./support.md)** - Resolve common deployment and runtime issues
+- **[Getting Started](./get-started.md)** - Complete initial setup requirements
+- **[Build from Source](./how-to-build-from-source.md)** - Build and deploy the application manually

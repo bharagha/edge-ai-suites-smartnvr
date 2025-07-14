@@ -1,12 +1,35 @@
 #!/bin/bash
 
-export PROJECT_NAME="nvr-event-router"
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
 
-# Optional: set a registry, e.g., "myregistry.io/" or leave it blank
-export REGISTRY="${REGISTRY:-}"
+# Helper functions for colored output
+print_error() {
+    echo -e "${RED}Error: $1${NC}"
+}
 
-# Construct the image tag
-tag="${PROJECT_NAME}:latest"
+print_warning() {
+    echo -e "${YELLOW}Warning: $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}Success: $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}Info: $1${NC}"
+}
+
+print_header() {
+    echo -e "${PURPLE}=== $1 ===${NC}"
+}
 
 
 # Get the host IP address
@@ -26,115 +49,106 @@ get_host_ip() {
     # Fallback to localhost if we couldn't determine the IP
     if [ -z "$HOST_IP" ]; then
         HOST_IP="localhost"
-        echo "Warning: Could not determine host IP, using localhost instead."
+        print_warning "Could not determine host IP, using localhost instead."
     fi
     
     echo "$HOST_IP"
 }
 
 # Function to validate required environment variables
-validate_environment() {
-    # Check for Frigate VMS IP and port
-    if [ -z "${FRIGATE_IP}" ]; then
-        echo "Error: FRIGATE_IP environment variable is required"
-        echo "Please set it to the IP address of your Frigate VMS"
-        return 1
-    fi
-    
-    if [ -z "${FRIGATE_PORT}" ]; then
-        echo "Error: FRIGATE_PORT environment variable is required"
-        echo "Please set it to the port of your Frigate VMS (typically 5000)"
-        return 1
-    fi
-    
+validate_environment() {    
     # Check for VSS IP and port
     if [ -z "${VSS_SUMMARY_IP}" ]; then
-        echo "Error: VSS_SUMMARY_IP environment variable is required"
-        echo "Please set it to the IP address of your Video Summarization Service"
+        print_error "VSS_SUMMARY_IP environment variable is required"
+        print_info "Please set it to the IP address of your Video Summarization Service"
         return 1
     fi
     
     if [ -z "${VSS_SUMMARY_PORT}" ]; then
-        echo "Error: VSS_SUMMARY_PORT environment variable is required"
-        echo "Please set it to the port of your Video Summarization Service (typically 12345)"
+        print_error "VSS_SUMMARY_PORT environment variable is required"
+        print_info "Please set it to the port of your Video Summarization Service (typically 12345)"
         return 1
     fi
     # Check for VSS IP and port
     if [ -z "${VSS_SEARCH_IP}" ]; then
-        echo "Error: VSS_SEARCH_IP environment variable is required"
-        echo "Please set it to the IP address of your Video Summarization Service"
+        print_error "VSS_SEARCH_IP environment variable is required"
+        print_info "Please set it to the IP address of your Video Summarization Service"
         return 1
     fi
     
     if [ -z "${VSS_SEARCH_PORT}" ]; then
-        echo "Error: VSS_SEARCH_PORT environment variable is required"
-        echo "Please set it to the port of your Video Summarization Service (typically 12345)"
+        print_error "VSS_SEARCH_PORT environment variable is required"
+        print_info "Please set it to the port of your Video Summarization Service (typically 12345)"
         return 1
     fi
     
     # Check for VLM Model Endpoint IP and port
-    if [ -z "${VLM_MODEL_IP}" ]; then
-        echo "Error: VLM_MODEL_IP environment variable is required"
-        echo "Please set it to the IP address of your VLM Model Endpoint"
+    if [ -z "${VLM_SERVING_IP}" ]; then
+        print_error "VLM_SERVING_IP environment variable is required"
+        print_info "Please set it to the IP address of your VLM Model Endpoint"
         return 1
     fi
     
-    if [ -z "${VLM_MODEL_PORT}" ]; then
-        echo "Error: VLM_MODEL_PORT environment variable is required"
-        echo "Please set it to the port of your VLM Model Endpoint (typically 9766)"
+    if [ -z "${VLM_SERVING_PORT}" ]; then
+        print_error "VLM_SERVING_PORT environment variable is required"
+        print_info "Please set it to the port of your VLM Model Endpoint (typically 9766)"
         return 1
     fi
     
     # Check for MQTT user and password
     if [ -z "${MQTT_USER}" ]; then
-        echo "Error: MQTT_USER environment variable is required"
+        print_error "MQTT_USER environment variable is required"
         return 1
     fi
     
     if [ -z "${MQTT_PASSWORD}" ]; then
-        echo "Error: MQTT_PASSWORD environment variable is required"
+        print_error "MQTT_PASSWORD environment variable is required"
         return 1
     fi
 }
 
 # Function to start the services
 start_services() {
+    print_header "Starting NVR Event Router Services"
     HOST_IP=$(get_host_ip)
     export HOST_IP=$(get_host_ip)
     # Validate environment variables and exit if validation fails
     if ! validate_environment; then
-        echo "Error: Environment validation failed. Please set the required variables."
+        print_error "Environment validation failed. Please set the required variables."
         return 1
     fi
     
+    print_info "Starting Docker Compose services..."
     # Run the Docker Compose stack with all services
     docker compose -f docker/compose.yaml up -d 
     sleep 5
-    echo "Services are starting up..."
-    echo "- UI will be available at: http://${HOST_IP}:7860"
+    print_success "Services are starting up..."
+    print_info "UI will be available at: ${CYAN}http://${HOST_IP}:7860${NC}"
 }
 
 # Function to stop the services
 stop_services() {
-    echo "Stopping NVR Event Router services..."
+    print_header "Stopping NVR Event Router Services"
+    print_info "Stopping NVR Event Router services..."
     docker compose -f docker/compose.yaml down
-    echo "All services stopped."
+    print_success "All services stopped."
 }
 
 # Function to display help
 show_help() {
-    echo "Usage: $0 [command]"
+    print_header "NVR Event Router Setup Script"
+    echo -e "${WHITE}Usage:${NC} $0 [command]"
     echo ""
-    echo "Commands:"
-    echo "  start    - Start all services (default if no command provided)"
-    echo "  stop     - Stop all services"
-    echo "  restart  - Restart all services"
-    echo "  help     - Display this help message"
+    echo -e "${WHITE}Commands:${NC}"
+    echo -e "  ${GREEN}start${NC}    - Start all services"
+    echo -e "  ${RED}stop${NC}     - Stop all services"
+    echo -e "  ${YELLOW}restart${NC}  - Restart all services"
+    echo -e "  ${BLUE}help${NC}     - Display this help message"
     echo ""
-    echo "Examples:"
-    echo "  $0 start     # Start the services"
-    echo "  $0 stop      # Stop the services"
-    echo "  $0           # Same as 'start' (for backward compatibility)"
+    echo -e "${WHITE}Examples:${NC}"
+    echo -e "  ${CYAN}$0 start${NC}     # Start the services"
+    echo -e "  ${CYAN}$0 stop${NC}      # Stop the services"
+    echo -e "  ${CYAN}$0 restart${NC}   # Restart the services"
     echo ""
 }
 
@@ -147,6 +161,7 @@ case "$1" in
         stop_services
         ;;
     restart)
+        print_header "Restarting NVR Event Router Services"
         stop_services
         sleep 5
         start_services
@@ -155,7 +170,7 @@ case "$1" in
         show_help
         ;;
     *)
-        # Default behavior (backwards compatibility)
-        start_services
+        # Default behavior - show help
+        show_help
         ;;
 esac

@@ -4,7 +4,6 @@ This page provides comprehensive support and troubleshooting information for the
 
   - **Common Issues**: General troubleshooting steps for resolving issues like container failures, port conflicts, and missing dependencies.
   - **Troubleshooting Docker Deployments**: Steps to address problems specific to Docker deployments.
-  - **Troubleshooting Helm Deployments**: Guidance for resolving issues in Helm-based deployments.
 
 ## Troubleshooting Common Issues
 
@@ -13,63 +12,39 @@ This page provides comprehensive support and troubleshooting information for the
 - **Solution**:
 
   ```bash
-  docker compose logs
+  docker ps
+  docker logs <container-id>
   ```
-  Check the logs for errors and resolve dependency issues.
+  Check the logs for errors.
 
 ### 2. Port Conflicts
 - **Issue**: Port conflicts with other running applications.
 - **Solution**: Update the ports section in the Docker Compose file.
+  
+### 3. Description not coming in UI
+- Check logs for frigate container
+- Check if VLM microservice is running and reachable.
 
-### 3. Missing Dependencies
-- **Issue**: Required software dependencies are not installed.
-- **Solution**:
+### 4. Object not getting detected 
+- Check the label in frigate config.yaml for the specific camera
+- Check the top_score parameter 
 
-  ```bash
-  sudo apt-get install -y <dependency>
-  ```
+## Troubleshooting Docker Containers
 
-## Troubleshooting Docker Deployments
-
-### 1. Containers Failing To Start:
+### 1. Containers Failing:
    - Check the Docker logs for errors:
      ```bash
-     docker compose logs
+     docker ps
+     docker logs <container-id>
      ```
 ### 2. Port Conflicts:
    - Update the `ports` section in the Compose file to resolve conflicts.
 ### 3. Reset Application:
    - Follow these steps to reset the application to the initial state
      ```bash
-     docker compose down
-     docker volume ls | grep vms-event-router | awk '{ print $2 }' | xargs docker volume rm
+     ./setup.sh stop
+     docker volume ls | grep nvr-event-router | awk '{ print $2 }' | xargs docker volume rm
      ```
-## Troubleshooting Helm Deployments
-
-### 1. Helm Chart Not Found:
-
-   - Check if the Helm repository was added:
-
-     ```bash
-     helm repo list
-     ```
-
-### 2. Pods Not Running:
-
-   - Review pod logs:
-
-     ```bash
-     kubectl logs {{pod-name}} -n {{namespace}}
-     ```
-
-### 3. Service Unreachable:
-
-   - Confirm the service configuration:
-
-     ```bash
-     kubectl get svc -n {{namespace}}
-     ```
-
 <!--
 ## Support
 - **Developer Forum**: Join the community forum
