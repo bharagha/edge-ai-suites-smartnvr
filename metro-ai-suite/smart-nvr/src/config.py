@@ -19,4 +19,3 @@ REDIS_HOST = os.getenv("HOST_IP", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 MQTT_USER = os.getenv("MQTT_USER")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
-

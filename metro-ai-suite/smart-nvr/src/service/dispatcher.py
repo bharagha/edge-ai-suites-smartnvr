@@ -7,7 +7,8 @@ import logging
 logger = logging.getLogger(__name__)
 frigate_service = FrigateService()
 summarization_service = SummarizationService()
-vms_service = VmsService(frigate_service,summarization_service)
+vms_service = VmsService(frigate_service, summarization_service)
+
 
 async def dispatch_action(action: str, event: dict):
     print(f"action : {action} event {event}")
@@ -19,7 +20,9 @@ async def dispatch_action(action: str, event: dict):
 
             # Validate required fields
             if not camera_name or start_time is None or end_time is None:
-                raise ValueError("Missing required fields: camera, start_time, or end_time")
+                raise ValueError(
+                    "Missing required fields: camera, start_time, or end_time"
+                )
 
             summary_response = await vms_service.summarize(
                 camera_name=camera_name,
@@ -34,9 +37,11 @@ async def dispatch_action(action: str, event: dict):
             await save_summary_id(event["rule_id"], summary_id)
 
             # Retrieve actual summary result (synchronously)
-            summary_result = vms_service.summary(summary_id)['summary']
+            summary_result = vms_service.summary(summary_id)["summary"]
 
-            logger.info(f'Saving summary result  {summary_result} for summary id {summary_id}')
+            logger.info(
+                f"Saving summary result  {summary_result} for summary id {summary_id}"
+            )
             # Store summary response
             await save_summary_result(summary_id, summary_result)
 
@@ -57,7 +62,9 @@ async def dispatch_action(action: str, event: dict):
 
             # Validate required fields
             if not camera_name or start_time is None or end_time is None:
-                raise ValueError("Missing required fields: camera, start_time, or end_time")
+                raise ValueError(
+                    "Missing required fields: camera, start_time, or end_time"
+                )
 
             output = await vms_service.search_embeddings(
                 camera_name=camera_name,
@@ -79,4 +86,3 @@ async def dispatch_action(action: str, event: dict):
 
     else:
         return {"error": f"Unknown action: {action}"}
-

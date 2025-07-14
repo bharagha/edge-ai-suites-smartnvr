@@ -4,11 +4,13 @@ from service import redis_store
 
 app = FastAPI()
 
+
 class Rule(BaseModel):
     id: str
     label: str
     action: str
     camera: str | None = None
+
 
 @app.post("/rules/")
 async def add_rule(rule: Rule):
@@ -17,9 +19,11 @@ async def add_rule(rule: Rule):
         raise HTTPException(status_code=400, detail="Rule ID already exists")
     return {"message": "Rule added", "rule": rule}
 
+
 @app.get("/rules/")
 async def list_rules():
     return await redis_store.get_rules()
+
 
 @app.get("/rules/{rule_id}")
 async def get_rule(rule_id: str):
@@ -27,6 +31,7 @@ async def get_rule(rule_id: str):
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     return rule
+
 
 @app.delete("/rules/{rule_id}")
 async def delete_rule(rule_id: str):

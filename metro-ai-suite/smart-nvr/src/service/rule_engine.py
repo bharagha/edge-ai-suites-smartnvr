@@ -2,13 +2,15 @@ from service.redis_store import get_rules, store_response
 from service.dispatcher import dispatch_action
 import logging
 from fastapi import Request
+
 logger = logging.getLogger(__name__)
+
 
 async def process_event(event: dict, context: dict = None):
     logger.info(f"📌 [process_event] Event received: {event}")
     if context:
         logger.info(f"📌 Event context: {context}")
-    
+
     logger.info(f"📌 Detected label: {event.get('label')}")
     rules = await get_rules()
     logger.info(f"📌 Loaded {len(rules)} rules")

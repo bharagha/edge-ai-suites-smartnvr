@@ -1,10 +1,11 @@
-
 import time
 from config import API_BASE_URL, logger
 import uuid
 import hashlib
 import requests
 from typing import List, Dict, Optional
+
+
 def fetch_cameras():
     try:
         response = requests.get(f"{API_BASE_URL}/cameras", timeout=10)
@@ -14,22 +15,26 @@ def fetch_cameras():
         logger.error(f"Error fetching cameras: {e}")
         return []
 
+
 def fetch_events(camera_name):
     try:
-        response = requests.get(f"{API_BASE_URL}/events", params={"camera": camera_name}, timeout=15)
+        response = requests.get(
+            f"{API_BASE_URL}/events", params={"camera": camera_name}, timeout=15
+        )
         response.raise_for_status()
         events = response.json()
-        events.sort(key=lambda x: x.get('start_time', 0), reverse=True)
+        events.sort(key=lambda x: x.get("start_time", 0), reverse=True)
         return events
     except Exception as e:
         logger.error(f"Error fetching events: {e}")
         return []
 
+
 def add_rule(camera: str, label: str, action: str) -> Dict:
     # Create a consistent rule ID based on camera, label, and action
     rule_content = f"{camera}-{label}-{action.lower()}"
     hash = hashlib.md5(rule_content.encode()).hexdigest()[:8]  # 8-char hash
-    rule_id = camera + '-'+ label+'-'+action+'-'+ hash
+    rule_id = camera + "-" + label + "-" + action + "-" + hash
     # First check if rule already exists
     try:
         check_response = requests.get(f"{API_BASE_URL}/rules/{rule_id}")
@@ -37,29 +42,30 @@ def add_rule(camera: str, label: str, action: str) -> Dict:
             return {
                 "status": "exists",
                 "message": f"Rule already exists with ID: {rule_id}",
-                "rule_id": rule_id
+                "rule_id": rule_id,
             }
     except Exception as e:
         return {"status": "error", "message": f"Error checking rule: {str(e)}"}
-    
+
     # If not exists, create new rule
     payload = {
         "id": rule_id,
         "camera": camera,
         "label": label,
-        "action": action.lower()
+        "action": action.lower(),
     }
-    
+
     try:
         response = requests.post(f"{API_BASE_URL}/rules/", json=payload)
         response.raise_for_status()
         return {
-            "status": "success", 
+            "status": "success",
             "message": f"Rule {rule_id} added successfully.",
-            "rule_id": rule_id
+            "rule_id": rule_id,
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
 
 def fetch_rules() -> List[dict]:
     try:
@@ -81,6 +87,7 @@ def fetch_rule_responses() -> Dict:
         logger.error(f"Error fetching rule responses: {e}")
         return {"error": str(e)}
 
+
 def delete_rule_by_id(rule_id: str) -> str:
     try:
         response = requests.delete(f"{API_BASE_URL}/rules/{rule_id}")
@@ -91,6 +98,7 @@ def delete_rule_by_id(rule_id: str) -> str:
     except Exception as e:
         logger.error(f"Error deleting rule {rule_id}: {e}")
         return f"❌ Error: {str(e)}"
+
 
 def fetch_search_responses() -> Dict:
     """
@@ -103,6 +111,7 @@ def fetch_search_responses() -> Dict:
     except Exception as e:
         logger.error(f"Error fetching search responses: {e}")
         return {"error": str(e)}
+
 
 def fetch_summary_status(summary_id: str) -> str:
     """

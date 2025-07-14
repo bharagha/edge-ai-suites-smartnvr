@@ -3,13 +3,18 @@ import pytz
 import requests
 from config import API_BASE_URL, logger
 
-IST = pytz.timezone('Asia/Kolkata')
+IST = pytz.timezone("Asia/Kolkata")
+
 
 def parse_input_to_timestamp(input_val, label):
     try:
         dt = None
         if isinstance(input_val, datetime):
-            dt = IST.localize(input_val) if input_val.tzinfo is None else input_val.astimezone(IST)
+            dt = (
+                IST.localize(input_val)
+                if input_val.tzinfo is None
+                else input_val.astimezone(IST)
+            )
         elif isinstance(input_val, str):
             dt = datetime.fromisoformat(input_val)
             dt = IST.localize(dt) if dt.tzinfo is None else dt.astimezone(IST)
@@ -17,10 +22,11 @@ def parse_input_to_timestamp(input_val, label):
             dt = datetime.fromtimestamp(input_val, tz=pytz.utc).astimezone(IST)
         else:
             return None, None
-        return dt.timestamp(), dt.strftime('%Y-%m-%d %H:%M:%S %Z')
+        return dt.timestamp(), dt.strftime("%Y-%m-%d %H:%M:%S %Z")
     except Exception as e:
         logger.error(f"Error parsing {label}: {e}")
         return None, None
+
 
 def process_video(camera_name, start_time_input, duration_seconds, action, label=None):
     try:
@@ -52,7 +58,7 @@ def process_video(camera_name, start_time_input, duration_seconds, action, label
             response = requests.get(
                 f"{API_BASE_URL}/summary/{camera_name}",
                 params={"start_time": start_time, "end_time": end_time},
-                timeout=30
+                timeout=30,
             )
             response.raise_for_status()
             result = response.json()
@@ -65,7 +71,7 @@ def process_video(camera_name, start_time_input, duration_seconds, action, label
             response = requests.get(
                 f"{API_BASE_URL}/search-embeddings/{camera_name}",
                 params={"start_time": start_time, "end_time": end_time},
-                timeout=30
+                timeout=30,
             )
             response.raise_for_status()
             result = response.json()

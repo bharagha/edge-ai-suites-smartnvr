@@ -8,10 +8,11 @@ def format_timestamp(ts):
     try:
         if ts is None:
             return "N/A"
-        return datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         logger.error(f"Timestamp formatting error: {e}")
         return "Invalid Timestamp"
+
 
 def display_events(recent_events) -> List[List]:
     """Format events for display in a table."""
@@ -22,12 +23,12 @@ def display_events(recent_events) -> List[List]:
         try:
             top_score = "NA"
             description = "N/A"
-            if event.get('data') and 'description' in event.get('data', {}):
-                top_score = event.get('data', {}).get('top_score', 'N/A')
-                description = event.get('data', {}).get('description', 'N/A')
+            if event.get("data") and "description" in event.get("data", {}):
+                top_score = event.get("data", {}).get("top_score", "N/A")
+                description = event.get("data", {}).get("description", "N/A")
 
             # Handle thumbnail data
-            thumbnail = event.get('thumbnail', '')
+            thumbnail = event.get("thumbnail", "")
             if thumbnail:
                 # Create HTML img tag for base64 thumbnail
                 thumbnail_html = f'<img src="data:image/jpeg;base64,{thumbnail}" style="width:80px;height:60px;object-fit:cover;" alt="Event Thumbnail">'
@@ -35,12 +36,12 @@ def display_events(recent_events) -> List[List]:
                 thumbnail_html = "No Image"
 
             formatted_row = [
-                str(event.get('label', 'N/A')),
-                str(format_timestamp(event.get('start_time'))),
-                str(format_timestamp(event.get('end_time'))),
+                str(event.get("label", "N/A")),
+                str(format_timestamp(event.get("start_time"))),
+                str(format_timestamp(event.get("end_time"))),
                 str(top_score),
                 str(description),
-                thumbnail_html
+                thumbnail_html,
             ]
 
             # Enforce row is a list, not a tuple
@@ -48,5 +49,5 @@ def display_events(recent_events) -> List[List]:
         except Exception as e:
             logger.error(f"Error formatting event {event}: {e}")
             continue
-    
+
     return formatted_events

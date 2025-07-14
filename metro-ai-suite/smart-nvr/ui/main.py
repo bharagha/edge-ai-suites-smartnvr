@@ -10,11 +10,8 @@ from interface.interface import initialize_app, stop_event_updates, cleanup_temp
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("vms_event_router_ui.log")
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("vms_event_router_ui.log")],
 )
 logger = logging.getLogger(__name__)
 
@@ -27,11 +24,7 @@ if __name__ == "__main__":
 
         # Create and launch UI
         ui = create_ui()
-        ui.launch(
-            server_name="0.0.0.0",
-            show_error=True,
-            favicon_path=None
-        )
+        ui.launch(server_name="0.0.0.0", show_error=True, favicon_path=None)
 
     except Exception as e:
         logger.critical(f"Fatal error during startup: {e}", exc_info=True)
