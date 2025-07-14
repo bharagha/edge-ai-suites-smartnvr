@@ -13,7 +13,6 @@ import json
 camera_list = []
 recent_events = []
 # Global state
-camera_list = []
 recent_events = []
 event_update_thread = None
 stop_event_thread = threading.Event()
@@ -89,17 +88,28 @@ def poll_summary_status(summary_id, status_output, stop_event):
             status = response.get("status", "unknown")
             logger.info(f"Polled summary {summary_id} status: {status}")
 
-            # Safely update the status_output (Gradio Textbox)
+            # Format response as markdown
+            markdown_output = f"## Summary Status (Auto-Polling)\n\n"
+            markdown_output += f"**Summary ID:** `{summary_id}`\n\n"
+            for key, value in response.items():
+                if key == "status":
+                    status_emoji = "✅" if value == "completed" else "❌" if value == "failed" else "⏳"
+                    markdown_output += f"**Status:** {status_emoji} {value}\n\n"
+                else:
+                    markdown_output += f"**{key.replace('_', ' ').title()}:** {value}\n\n"
+
+            # Safely update the status_output (Gradio Markdown)
             if hasattr(status_output, "update"):
-                status_output.update(value=response)
+                status_output.update(value=markdown_output)
 
             if status in ("completed", "failed"):
                 break
 
         except Exception as e:
             logger.error(f"Error polling summary status: {e}", exc_info=True)
+            error_markdown = f"## Error\n\n❌ **Error fetching status:** {str(e)}"
             if hasattr(status_output, "update"):
-                status_output.update(value="Error fetching status")
+                status_output.update(value=error_markdown)
             break
 
         time.sleep(10)
@@ -138,6 +148,7 @@ def process_and_poll(camera, start, duration, action, status_output):
     return result
 
 def create_ui():
+    time.sleep(5)  # Ensure the environment is fully initialized
     camera_list = fetch_cameras()
     recent_events = []
     def format_summary_responses():
@@ -182,12 +193,14 @@ def create_ui():
                         start_input = gr.DateTime(label="Start Time")
                     with gr.Column(scale=1):
                         duration_input = gr.Number(label="Duration (seconds)", precision=0)
-                    with gr.Column(scale=1):
-                        process_btn = gr.Button("Process Video")
+                    with gr.Column():
+                        with gr.Row():
+                            process_btn = gr.Button("Process Video")
+                        with gr.Row():
+                            refresh_status_btn = gr.Button("🔄 Refresh Status")
 
                 with gr.Row():
-                        status_output = gr.Textbox(label="Summary Status", interactive=False, scale=5)
-                        refresh_status_btn = gr.Button("🔄 Refresh Summary Status", scale=1)
+                        status_output = gr.Markdown(value="", label="Summary Status")
                 result = gr.JSON(visible=False)
                 with gr.Row():
                     toast_output = gr.Textbox(visible=False, interactive=False, label="Status Message", scale=5)
@@ -212,21 +225,23 @@ def create_ui():
                             result_dict,
                             gr.update(value=message, visible=True),
                             gr.update(visible=True),
-                            summary_id
+                            summary_id,
+                            gr.update(value="Processing...") # Clear and show processing status
                         )
                     else:
                         return (
                             result_dict,
                             gr.update(value=message, visible=True),
                             gr.update(visible=True),
-                            previous_summary_id # preserve last summary_id_state
+                            previous_summary_id, # preserve last summary_id_state
+                            gr.update(value="") # Clear status output for search actions
                         )
 
 
                 process_btn.click(
                     fn=wrapper_fn,
                     inputs=[cam_dropdown, start_input, duration_input, action_dropdown, status_output,summary_id_state],
-                    outputs=[result, toast_output, close_toast_btn, summary_id_state]
+                    outputs=[result, toast_output, close_toast_btn, summary_id_state, status_output]
                 )
 
                 close_toast_btn.click(
@@ -238,9 +253,20 @@ def create_ui():
                 # Function to manually refresh summary status
                 def refresh_summary_status(summary_id):
                     if not summary_id:
-                        return "No summary ID available"
-                    response = fetch_summary_status(summary_id)
-                    return json.dumps(response, indent=2)
+                        return "**No summary ID available**"
+                    try:
+                        response = fetch_summary_status(summary_id)
+                        if isinstance(response, dict):
+                            # Format as markdown
+                            markdown_output = f"## Summary Status\n\n"
+                            markdown_output += f"**Summary ID:** `{summary_id}`\n\n"
+                            for key, value in response.items():
+                                markdown_output += f"**{key.replace('_', ' ').title()}:** {value}\n\n"
+                            return markdown_output
+                        else:
+                            return f"## Summary Status\n\n```json\n{json.dumps(response, indent=2)}\n```"
+                    except Exception as e:
+                        return f"## Error\n\n❌ **Error fetching status:** {str(e)}"
 
                 refresh_status_btn.click(
                     fn=refresh_summary_status,
@@ -428,10 +454,6 @@ def create_ui():
                     fn=format_search_responses,
                     outputs=[search_response_table]
                 )
-
-
-                
-
 
     return ui
 
