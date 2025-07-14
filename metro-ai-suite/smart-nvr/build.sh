@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set default values for IMAGE_NAME and TAG if not provided via environment variables
-IMAGE_NAME="${IMAGE_NAME:-nvr-event-router}"
+IMAGE_NAME="${IMAGE_NAME:-intel/nvr-event-router}"
 TAG="${TAG:-latest}"
 tag="${IMAGE_NAME}:${TAG}"
 
