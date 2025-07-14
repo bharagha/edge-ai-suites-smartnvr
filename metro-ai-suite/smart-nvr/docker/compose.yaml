@@ -34,7 +34,7 @@ services:
   
   nvr-event-router:
     container_name: nvr-event-router
-    image: nvr-event-router:latest
+    image: intel/nvr-event-router:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -68,7 +68,7 @@ services:
 
   nvr-event-router-ui:
     container_name: nvr-event-router-ui
-    image: nvr-event-router:latest
+    image: intel/nvr-event-router:latest
     restart: unless-stopped
     networks:
       - nvr-network
