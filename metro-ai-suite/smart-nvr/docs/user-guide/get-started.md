@@ -15,7 +15,19 @@ Smart NVR is a GenAI-powered video analytics application that enhances tradition
 ### Required Services
 Ensure these services are running before setting up Smart NVR:
 
-- **VLM Microservice**: Must be running on a device connected to the NVR
+**Multi-Device Setup Requirements**: The setup needs 3-4 devices for optimal performance:
+- **Device 1**: Runs VSS in Search Only Mode
+- **Device 2**: Runs VSS in Summary Only Mode  
+- **Device 3**: Runs VLM microservice with the model defined in frigate [config file](../../resources/frigate-config/config.yml)
+- **Device 3 or 4**: Runs the Smart NVR application
+
+> Note: You can use any supported VLM model. Just ensure the same model is being used in the frigate [config file](../../resources/frigate-config/config.yml). 
+
+> NOTE: While deploying the VLM service, you can use `VLM_MAX_COMPLETION_TOKENS` to limit the response length. 
+
+**Service Details**:
+- **VLM Microservice**: Must be running for AI-Powered Event Viewer. 
+  - 📖 [VLM Serving Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/microservices/vlm-openvino-serving/docs/user-guide/get-started.md) 
 - **VSS (Video Search and Summarization) Services**:
   - **VSS Search**: Running on one device for video search functionality
   - **VSS Summary**: Running on a separate device for video summarization
@@ -58,7 +70,7 @@ export MQTT_PASSWORD=<mqtt-password>           # Required
 Launch all services using the setup script:
 
 ```bash
-./setup.sh start
+source setup.sh start
 ```
 
 This will start all required services as shown below:
@@ -77,7 +89,7 @@ http://<host-ip>:7860
 To stop all services:
 
 ```bash
-./setup.sh stop
+source setup.sh stop
 ```
 
 ## Next Steps
