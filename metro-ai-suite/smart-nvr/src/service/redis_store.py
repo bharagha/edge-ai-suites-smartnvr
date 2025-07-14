@@ -39,8 +39,11 @@ async def get_rules(request=None):
             rules.append(json.loads(data))
     return rules
 
+import json
+from fastapi import Request
+
 async def delete_rule(request: Request, rule_id: str) -> bool:
-    """Deletes a rule and removes the ID from the 'rules' set, including associated responses."""
+    """Deletes a rule and all its associated data from Redis, including summaries."""
     redis_client = request.app.state.redis_client
 
     # Check if rule exists
@@ -48,12 +51,34 @@ async def delete_rule(request: Request, rule_id: str) -> bool:
     if not exists:
         return False
 
-    # Delete rule and associated data
+    # Delete the rule and its related keys
     await redis_client.delete(f"rule:{rule_id}")
-    await redis_client.delete(f"response:{rule_id}")  # Delete associated responses
+    await redis_client.delete(f"search_results:{rule_id}")
     await redis_client.srem("rules", rule_id)
 
+    # Delete associated summary_result keys from response list
+    response_key = f"response:{rule_id}"
+    response_entries = await redis_client.lrange(response_key, 0, -1)
+
+    summary_keys_to_delete = []
+
+    for entry in response_entries:
+        try:
+            item = json.loads(entry)
+            summary_id = item.get("summary_id")
+            if summary_id:
+                summary_keys_to_delete.append(f"summary_result:{summary_id}")
+        except Exception as e:
+            # Log or ignore malformed entries
+            pass
+
+    # Delete response and all summary_result:* keys
+    await redis_client.delete(response_key)
+    if summary_keys_to_delete:
+        await redis_client.delete(*summary_keys_to_delete)
+
     return True
+
 
 
 # --- RESPONSE MANAGEMENT ---

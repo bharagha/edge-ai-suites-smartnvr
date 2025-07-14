@@ -129,7 +129,7 @@ class VmsService:
         try:
             result = summarization_service.get_summary_result(summary_id, self.vss_summary_url)
         except Exception as e:
-            logger.error(f"Failed to retrieve summary: {e}")
+            logger.error(f"Failed to retrieve summary from summarization service for summary id {summary_id}: {e}")
             raise
 
         video_summary = result.get("summary")

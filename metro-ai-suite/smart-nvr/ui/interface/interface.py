@@ -154,17 +154,21 @@ def create_ui():
     def format_summary_responses():
         data = fetch_rule_responses()
         rows = []
-        print("data..............................................................")
-        print(data)
+
+        # Check if the response contains an error (e.g., 502 error wrapped in a dict)
+        if isinstance(data, dict) and "error" in data:
+            print("Error fetching summary responses:", data["error"])
+            return [["-", "-", "❌ Failed to retrieve summary from summarization service"]]
+
         for rule_id, summaries in data.items():
             if summaries:
                 for summary_id, message in summaries.items():
-                    print('message -----------------------------------------------------------------------------')
-                    print(message)
-                    rows.append([rule_id, summary_id, message['summary']])
+                    rows.append([rule_id, summary_id, message.get("summary", "No summary text")])
             else:
                 rows.append([rule_id, "", "No summaries available."])
+
         return rows
+
     def format_search_responses():
         data = fetch_search_responses()
         rows = []
