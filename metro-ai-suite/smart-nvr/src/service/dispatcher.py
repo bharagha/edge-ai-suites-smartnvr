@@ -66,16 +66,15 @@ async def dispatch_action(action: str, event: dict):
             )
 
             # Save summary_id under the rule
+            if output["status"] != 200:
+                logger.info(f"output .....................{output}")
+                return
             await save_search(event["rule_id"], output)
-
-            video_id, message = next(iter(output.items()))
-            return {
-                "video_id": video_id,
-                "message": message,
-            }
+            logger.info(output)
+            return output
 
         except Exception as e:
-            logger.error(f"❌ Summarize action failed: {e}")
+            logger.error(f"❌ Search action failed: {e}")
             return {"error": str(e)}
 
     else:

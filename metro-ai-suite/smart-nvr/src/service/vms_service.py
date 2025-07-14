@@ -189,7 +189,7 @@ class VmsService:
             response.raise_for_status()
             message = response.json().get("message", "No message in response.")
             logger.info(f"Embedding search response: {message}")
-            return {upload_resp["message"]: message}
+            return {"status": 200, "video_id": upload_resp["message"],  "message": message}
         except requests.RequestException as e:
             logger.error(f"Search embeddings API failed: {e}")
             raise

@@ -12,10 +12,16 @@ Docker Compose simplifies the deployment process by managing multiple containers
   ```bash
   export FRIGATE_IP=<frigate-ip-address> #IP address of the Frigate VMS (required)
   export FRIGATE_PORT=<frigate-port> #Port of the Frigate VMS (required, typically 5000)
-  export VSS_IP=<vss-ip-address> #IP address of the Video Search and Summarization service (required)
-  export VSS_PORT=<vss-port> #Port of the Video Search and Summarization service (required, typically 12345)
+  export VSS_SUMMARY_IP=<vss-ip-address> #IP address of the Video Summarization service (required)
+  export VSS_SUMMARY_PORT=<vss-port> #Port of the Video Summarization service (required, typically 12345)
+  export VSS_SEARCH_IP=<vss-ip-address> #IP address of the Video Search service (required)
+  export VSS_SEARCH_PORT=<vss-port> #Port of the Video Search service (required, typically 12345)
   export VLM_MODEL_IP=<vlm-model-end-point-ip-address> #IP address of the VLM Model Endpoint (required)
   export VLM_MODEL_PORT=<vlm-model-end-point-port> #Port of the VLM Model Endpoint (required, typically 9766)
+  export MQTT_USER=frigate           
+  export MQTT_PASSWORD=mqtt 
+  export HOST_IP=<host-ip>  # It's the IP address where the NVR Event Router will run
+
   ```
 
 ## Build the images

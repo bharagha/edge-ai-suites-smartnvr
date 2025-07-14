@@ -85,9 +85,13 @@ async def save_search(rule_id: str, search_output: dict, request=None):
     """
     redis_client = getattr(request.app.state, "redis_client", None) if request else fallback_redis_client
 
-    for video_id, message in search_output.items():
-        entry = json.dumps({"video_id": video_id, "message": message})
-        await redis_client.rpush(f"search_results:{rule_id}", entry)
+    entry = json.dumps({
+        "video_id": search_output["video_id"],
+        "message": search_output["message"]
+    })
+
+    await redis_client.rpush(f"search_results:{rule_id}", entry)
+
 async def get_summary_ids(request: Request, rule_id: str):
     """Get all summary IDs for a rule."""
     redis_client = request.app.state.redis_client
