@@ -1,6 +1,6 @@
 # Combined Dockerfile for NVR Event Router (backend and UI)
 # Build stage - includes build dependencies
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Set environment variables for build stage
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -21,7 +21,7 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r /app/requirements.txt
 
 # Production stage - minimal runtime image
-FROM python:3.11-slim AS production
+FROM python:3.12-slim AS production
 
 # Define user and group IDs as build arguments with defaults
 ARG USER_ID=1000
