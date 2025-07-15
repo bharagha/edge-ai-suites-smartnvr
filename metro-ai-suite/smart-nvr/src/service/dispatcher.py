@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from service.vms_service import VmsService
 from service.redis_store import save_summary_id, save_summary_result, save_search
 from api.endpoints.summarization_api import SummarizationService

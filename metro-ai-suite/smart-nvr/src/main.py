@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from fastapi import FastAPI
 from api.router import router  # your custom route logic (rules, results, etc.)
 from service.mqtt_listener import start_mqtt

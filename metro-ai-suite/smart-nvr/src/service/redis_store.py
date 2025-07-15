@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 import json
 from fastapi import Request
 from config import REDIS_HOST, REDIS_PORT

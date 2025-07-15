@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from service import redis_store

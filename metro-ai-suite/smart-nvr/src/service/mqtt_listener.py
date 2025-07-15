@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 import asyncio
 import json
 import paho.mqtt.client as mqtt

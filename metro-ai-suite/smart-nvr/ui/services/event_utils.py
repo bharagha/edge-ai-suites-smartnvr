@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from datetime import datetime
 from config import logger
 from typing import List, Dict, Optional, Tuple

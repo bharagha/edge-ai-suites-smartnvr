@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from service.redis_store import get_rules, store_response
 from service.dispatcher import dispatch_action
 import logging

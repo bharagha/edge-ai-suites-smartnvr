@@ -1,3 +1,5 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 from fastapi import APIRouter, Depends, HTTPException
 from api.endpoints.frigate_api import FrigateService
 from pydantic import BaseModel
