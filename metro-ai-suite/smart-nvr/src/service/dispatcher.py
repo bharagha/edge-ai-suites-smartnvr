@@ -13,7 +13,6 @@ vms_service = VmsService(frigate_service, summarization_service)
 
 
 async def dispatch_action(action: str, event: dict):
-    print(f"action : {action} event {event}")
     if action == "summarize":
         try:
             camera_name = event.get("camera")
@@ -76,10 +75,8 @@ async def dispatch_action(action: str, event: dict):
 
             # Save summary_id under the rule
             if output["status"] != 200:
-                logger.info(f"output .....................{output}")
                 return
             await save_search(event["rule_id"], output)
-            logger.info(output)
             return output
 
         except Exception as e:

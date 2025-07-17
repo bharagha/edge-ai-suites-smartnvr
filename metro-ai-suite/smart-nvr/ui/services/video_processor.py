@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 import pytz
 import requests
-from config import API_BASE_URL, logger
+from ui.config import API_BASE_URL, logger
 
 IST = pytz.timezone("Asia/Kolkata")
 

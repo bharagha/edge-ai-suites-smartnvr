@@ -166,7 +166,6 @@ class VmsService:
         # If summary is empty or None, return fallback structure
         if not video_summary:
             logger.info("Final summary not ready yet.")
-            logger.info(result)
             # Extract summarized frames with fallback structure
             frame_summaries = result.get("frameSummaries", [])
             simplified_frame_summaries = []

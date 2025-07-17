@@ -20,53 +20,9 @@ async def get_cameras():
     return {"cameras": frigate_service.get_camera_names()}
 
 
-@router.get(
-    "/cameras/{camera_name}/clip",
-    summary="Get video clip for specific camera and time range",
-)
-async def get_camera_clip(
-    camera_name: str, start_time: float, end_time: float, download: bool = False
-):
-    return await frigate_service.get_camera_clip(
-        camera_name, start_time, end_time, download
-    )
-
-
-@router.get("/events/{event_id}/clip.mp4", summary="Get event clip by event ID")
-async def get_event_clip(event_id: str, download: bool = False):
-    return await frigate_service.get_event_clip(event_id, download)
-
-
-class ExportRequest(BaseModel):
-    playback: str
-    source: str
-    name: str
-    image_path: str
-
-
-@router.post("/cameras/{camera_name}/export", summary="Export video from Frigate")
-async def export_camera_clip(
-    camera_name: str, start_time: float, end_time: float, request_data: ExportRequest
-):
-    return await frigate_service.export_camera_clip(
-        camera_name, start_time, end_time, request_data.dict()
-    )
-
-
-@router.get("/exports/{export_id}", summary="Get details of a specific export")
-async def get_export_details(export_id: str):
-    return await frigate_service.get_export_details(export_id)
-
-
 @router.get("/events", summary="Get list of events for a specific camera")
 async def get_camera_events(camera: str):
     return await frigate_service.get_camera_events(camera)
-
-
-@router.get("/exports/{export_id}/video", summary="Stream or download export video")
-async def get_export_video(export_id: str, download: bool = False):
-    return await frigate_service.stream_export_video(export_id, download)
-
 
 @router.get("/summary/{camera_name}", summary="Stream video using clip.mp4 API")
 async def summarize_video(
@@ -116,10 +72,6 @@ async def get_all_rule_summaries(request: Request):
 
         for sid in summary_ids:
             result = vms_service.summary(sid)
-            print(
-                "result..............................................................................."
-            )
-            print(result)
             summaries[sid] = result or "Pending"
 
         output[rule_id] = summaries

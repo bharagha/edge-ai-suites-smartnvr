@@ -1,7 +1,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import time
-from config import API_BASE_URL, logger
+from ui.config import API_BASE_URL, logger
 import uuid
 import hashlib
 import requests

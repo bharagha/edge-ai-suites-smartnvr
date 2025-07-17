@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 async def process_event(event: dict, context: dict = None):
-    logger.info(f"📌 [process_event] Event received: {event}")
+    logger.info(f"📌 Processing Event.")
     if context:
         logger.info(f"📌 Event context: {context}")
 
@@ -22,7 +22,7 @@ async def process_event(event: dict, context: dict = None):
         if rule["label"] == event.get("label") and (
             not rule.get("camera") or rule["camera"] == event.get("camera")
         ):
-            logger.info(f"✅ Match found: rule {rule['id']}")
+            logger.info(f"✅ Match found.")
             event["rule_id"] = rule["id"]
             response = await dispatch_action(rule["action"], event)
             await store_response(rule["id"], response)

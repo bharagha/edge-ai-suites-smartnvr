@@ -82,6 +82,7 @@ async def delete_rule(request: Request, rule_id: str) -> bool:
             item = json.loads(entry)
             summary_id = item.get("summary_id")
             if summary_id:
+                summary_keys_to_delete.append(f"summary_ids:{rule_id}")
                 summary_keys_to_delete.append(f"summary_result:{summary_id}")
         except Exception as e:
             # Log or ignore malformed entries

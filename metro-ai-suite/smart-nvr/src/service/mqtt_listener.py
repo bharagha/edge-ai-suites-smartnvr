@@ -1,6 +1,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import asyncio
+from cProfile import label
 import json
 import paho.mqtt.client as mqtt
 from service.rule_engine import process_event
@@ -46,11 +47,6 @@ def on_message(client, userdata, msg):
         start_time = event_data.get("start_time")
         end_time = event_data.get("end_time")
 
-        logger.info(f"🔍 Event label: {label}")
-        logger.info(f"🎥 Camera: {camera_name}")
-        logger.info(f"⏱ Start Time: {start_time}")
-        logger.info(f"⏱ End Time: {end_time}")
-
         # Proceed only if all required fields are present AND duration >= 3 seconds
         if (
             label
@@ -59,6 +55,8 @@ def on_message(client, userdata, msg):
             and end_time
             and (end_time - start_time) >= 10
         ):
+            logger.info(f"🔍 Event label: {label} | 🎥 Camera: {camera_name} | ⏱ Start Time: {start_time} | ⏱ End Time: {end_time}")
+
             logger.info("🚀 Submitting event to process_event coroutine")
             future = asyncio.run_coroutine_threadsafe(
                 process_event(

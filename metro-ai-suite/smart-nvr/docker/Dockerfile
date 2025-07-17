@@ -34,7 +34,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     API_BASE_URL=http://localhost:8000 \
     HOST_API_URL=http://localhost:8000 \
     EVENT_POLL_INTERVAL=10 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=/app
 
 # Create non-root user and group
 RUN groupadd -g ${USER_GROUP_ID} appuser && useradd -m -s /bin/bash -u ${USER_ID} -g ${USER_GROUP_ID} appuser

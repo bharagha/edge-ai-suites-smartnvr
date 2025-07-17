@@ -168,8 +168,6 @@ def extract_summary_id(raw_id):
 
 def process_and_poll(camera, start, duration, action, status_output):
     result = process_video(camera, start, duration, action)
-    print("Printing result ..............................")
-    print(result)
     if action == "Add to Search":
         return result
     raw_id = result.get("summary_id")
