@@ -49,6 +49,16 @@ export IMAGE_NAME="my-registry/nvr-event-router"
 export TAG="v1.0.0"
 ./build.sh
 ```
+### Building with Copyleft Sources
+
+If you need to include copyleft sources in your build, you can set the following environment variable:
+
+```bash
+export ADD_COPYLEFT_SOURCES=true
+```
+
+When this environment variable is set to `true`, it allows the Dockerfiles to conditionally include copyleft sources when needed.
+
 
 ## What to Do Next
 

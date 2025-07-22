@@ -18,5 +18,10 @@ if [ -n "${no_proxy}" ]; then
     BUILD_ARGS="${BUILD_ARGS} --build-arg no_proxy=${no_proxy}"
 fi
 
+# Add copyleft sources build arg if environment variable is set
+if [ "$ADD_COPYLEFT_SOURCES" = "true" ]; then
+BUILD_ARGS="$BUILD_ARGS --build-arg COPYLEFT_SOURCES=true"
+fi
+
 docker build ${BUILD_ARGS} -t "${tag}" -f docker/Dockerfile .
 docker images | grep "$tag" && echo "Image ${tag} built successfully."
