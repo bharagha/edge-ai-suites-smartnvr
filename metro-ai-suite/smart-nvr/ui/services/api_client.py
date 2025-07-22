@@ -126,3 +126,4 @@ def fetch_summary_status(summary_id: str) -> str:
     except Exception as e:
         logger.error(f"Error fetching search responses: {e}")
         return str(e)
+

@@ -17,6 +17,7 @@ services:
     volumes:
       - ../resources/frigate-config:/config
       - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - type: tmpfs # Necessary for optimized performance
         target: /tmp/cache
         tmpfs:
@@ -47,6 +48,8 @@ services:
       - nvr-network
     volumes:
       - ../src:/app
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       frigate:
         condition: service_healthy
@@ -72,6 +75,9 @@ services:
     restart: unless-stopped
     networks:
       - nvr-network
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       - nvr-event-router
     ports:
@@ -93,6 +99,8 @@ services:
       - ../resources/mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       MQTT_USER: ${MQTT_USER} 
       MQTT_PASSWORD: ${MQTT_PASSWORD} 
@@ -120,6 +128,8 @@ services:
       - nvr-network
     volumes:
       - redis_data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "6379:6379"  # Optional: expose Redis externally
     healthcheck:
