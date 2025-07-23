@@ -1,13 +1,11 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-from fastapi import APIRouter, Depends, HTTPException
-from api.endpoints.frigate_api import FrigateService
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+from api.endpoints.frigate_api import FrigateService
 from api.endpoints.summarization_api import SummarizationService
 from service.vms_service import VmsService
-from pydantic import BaseModel
 from service import redis_store
-from fastapi import Request
 
 router = APIRouter()
 frigate_service = FrigateService()
@@ -28,7 +26,6 @@ async def get_camera_events(camera: str):
 async def summarize_video(
     camera_name: str, start_time: float, end_time: float, download: bool = False
 ):
-    print("vms service")
     return await vms_service.summarize(camera_name, start_time, end_time)
 
 
@@ -38,7 +35,6 @@ async def summarize_video(
 async def search_video_embeddings(
     camera_name: str, start_time: float, end_time: float, download: bool = False
 ):
-    print("vms service search embeddings")
     return await vms_service.search_embeddings(camera_name, start_time, end_time)
 
 

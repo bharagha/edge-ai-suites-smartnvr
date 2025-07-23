@@ -1,7 +1,7 @@
 services:
   frigate:
     container_name: frigate-vms
-    image: ghcr.io/blakeblackshear/frigate:stable
+    image: ghcr.io/blakeblackshear/frigate:0.15.1
     restart: unless-stopped
     shm_size: "64mb" 
     networks:

@@ -4,6 +4,7 @@ import os
 import gradio as gr
 import threading
 import tempfile
+from datetime import datetime, timedelta
 import time
 import logging
 from services.api_client import (
@@ -142,8 +143,8 @@ def poll_summary_status(summary_id, status_output, stop_event):
                     )
 
             # Safely update the status_output (Gradio Markdown)
-            if hasattr(status_output, "update"):
-                status_output.update(value=markdown_output)
+            logger.info(f"status_output : {status_output} and markdown_output {markdown_output}")
+            status_output=markdown_output
 
             if status in ("completed", "failed"):
                 break
@@ -151,8 +152,7 @@ def poll_summary_status(summary_id, status_output, stop_event):
         except Exception as e:
             logger.error(f"Error polling summary status: {e}", exc_info=True)
             error_markdown = f"## Error\n\n❌ **Error fetching status:** {str(e)}"
-            if hasattr(status_output, "update"):
-                status_output.update(value=error_markdown)
+            status_output =error_markdown
             break
 
         time.sleep(10)
@@ -172,7 +172,6 @@ def process_and_poll(camera, start, duration, action, status_output):
         return result
     raw_id = result.get("summary_id")
     summary_id = extract_summary_id(raw_id)
-    print(polling_threads)
 
     if result["status"] == "success" and summary_id:
         if summary_id in polling_threads:
@@ -188,7 +187,140 @@ def process_and_poll(camera, start, duration, action, status_output):
         polling_threads[summary_id] = {"thread": thread, "stop": stop_event}
 
     return result
+def wrapper_fn(
+    camera,
+    start,
+    duration,
+    action,
+    status_output_box,
+    previous_summary_id,
+):
+    now = datetime.now()
+    min_time = now - timedelta(hours=24)
 
+    # Ensure start is a datetime object
+    if isinstance(start, float):
+        start = datetime.fromtimestamp(start)
+    elif isinstance(start, int):
+        start = datetime.fromtimestamp(float(start))
+    elif not isinstance(start, datetime):
+        return (
+            None,
+            gr.update(value="❌ Error: Invalid start time format.", visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+        )
+
+    # Validate start time
+    if start > now:
+        return (
+            None,
+            gr.update(value="❌ Error: Start time cannot be in the future.", visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+        )
+    elif start < min_time:
+        return (
+            None,
+            gr.update(value="❌ Error: Start time must be within the last 24 hours.", visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+        )
+
+    # Validate duration > 0
+    try:
+        duration_sec = int(duration)
+        if duration_sec <= 0:
+            raise ValueError
+    except Exception:
+        return (
+            None,
+            gr.update(value="❌ Error: Duration must be a number greater than 0 seconds.", visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+        )
+
+    # Validate that end time is not in the future
+    end_time = start + timedelta(seconds=duration_sec)
+    if end_time > now:
+        return (
+            None,
+            gr.update(value="❌ Error: End time (start + duration) cannot be in the future.", visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+        )
+    # Call processing function
+    result_dict = process_and_poll(camera, start, duration, action, status_output_box)
+
+    message = result_dict.get("message", json.dumps(result_dict, indent=2))
+
+    if action == "Summarize":
+        raw_summary = result_dict.get("summary_id")
+        summary_id = extract_summary_id(raw_summary)
+        logger.info("Extracted Summary ID:", summary_id)
+
+        return (
+            result_dict,
+            gr.update(value=message, visible=True),
+            gr.update(visible=True),
+            summary_id,
+            gr.update(value="Processing..."),
+            True
+        )
+    else:  # Search or other action
+        return (
+            result_dict,
+            gr.update(value=message, visible=True),
+            gr.update(visible=True),
+            previous_summary_id,
+            gr.update(value=""),
+            False
+        )
+# Function to hide toast and close button
+def dismiss_toast():
+    return gr.update(visible=False), gr.update(visible=False)
+# Function to manually refresh summary status
+def refresh_summary_status(summary_id):
+    if not summary_id:
+        return "", gr.update(visible=False), gr.update(visible=False)
+
+    try:
+        response = fetch_summary_status(summary_id)
+        if isinstance(response, dict):
+            # Hide toast and return formatted markdown
+            markdown_output = f"## Summary Status\n\n"
+            markdown_output += f"**Summary ID:** `{summary_id}`\n\n"
+            for key, value in response.items():
+                markdown_output += f"**{key.replace('_', ' ').title()}:** {value}\n\n"
+            return markdown_output, gr.update(visible=False), gr.update(visible=False)
+        else:
+            return f"## Summary Status\n\n```json\n{json.dumps(response, indent=2)}\n```", gr.update(visible=False), gr.update(visible=False)
+
+    except Exception as e:
+        return f"## Error\n\n❌ **Error fetching status:** {str(e)}", gr.update(visible=True), gr.update(visible=True)
+
+def auto_refresh_summary_status(summary_id):
+    if not summary_id:
+        return "", gr.update(visible=False), gr.update(visible=False)
+
+    try:
+        response = fetch_summary_status(summary_id)
+        if isinstance(response, dict):
+            markdown_output = f"## Summary Status\n\n"
+            markdown_output += f"**Summary ID:** `{summary_id}`\n\n"
+            for key, value in response.items():
+                markdown_output += f"**{key.replace('_', ' ').title()}:** {value}\n\n"
+            # Hide toast on success
+            return markdown_output, gr.update(visible=False), gr.update(visible=False)
+        else:
+            return f"## Summary Status\n\n```json\n{json.dumps(response, indent=2)}\n```", gr.update(visible=False), gr.update(visible=False)
+    except Exception as e:
+        return f"## Error\n\n❌ **Error fetching status:** {str(e)}", f"❌ Error: {str(e)}", gr.update(visible=True)
 
 def create_ui():
     time.sleep(5)  # Ensure the environment is fully initialized
@@ -201,7 +333,6 @@ def create_ui():
 
         # Check if the response contains an error (e.g., 502 error wrapped in a dict)
         if isinstance(data, dict) and "error" in data:
-            print("Error fetching summary responses:", data["error"])
             return [
                 ["-", "-", "❌ Failed to retrieve summary from summarization service"]
             ]
@@ -249,7 +380,10 @@ def create_ui():
                             choices=["Summarize", "Add to Search"], value="Summarize"
                         )
                     with gr.Column(scale=1):
-                        start_input = gr.DateTime(label="Start Time")
+                        start_input = gr.DateTime(
+                            label="Start Time",
+                            value=datetime.now()
+                        )
                     with gr.Column(scale=1):
                         duration_input = gr.Number(
                             label="Duration (seconds)", precision=0
@@ -262,7 +396,18 @@ def create_ui():
 
                 with gr.Row():
                     status_output = gr.Markdown(value="", label="Summary Status")
+                polling_timer = gr.Timer(value=5.0, active=False)  # 5 seconds interval, initially inactive
+
+                polling_enabled_state = gr.State(value=False)
                 result = gr.JSON(visible=False)
+
+                # Turn timer visibility ON or OFF based on state
+                polling_enabled_state.change(
+                    fn=lambda enabled: gr.update(active=enabled),
+                    inputs=[polling_enabled_state],
+                    outputs=[polling_timer],
+                )
+
                 with gr.Row():
                     toast_output = gr.Textbox(
                         visible=False,
@@ -271,53 +416,13 @@ def create_ui():
                         scale=5,
                     )
                     close_toast_btn = gr.Button("❌", visible=False, scale=1)
-
-                # Function to hide toast and close button
-                def dismiss_toast():
-                    return gr.update(visible=False), gr.update(visible=False)
-
-                # When toast is shown, make both visible
-                def wrapper_fn(
-                    camera,
-                    start,
-                    duration,
-                    action,
-                    status_output_box,
-                    previous_summary_id,
-                ):
-                    result_dict = process_and_poll(
-                        camera, start, duration, action, status_output_box
-                    )
-                    print("Result from process_and_poll:", result_dict)
-
-                    message = result_dict.get(
-                        "message", json.dumps(result_dict, indent=2)
-                    )
-                    print("Action selected:", action)
-
-                    if action == "Summarize":
-                        raw_summary = result_dict.get("summary_id")
-                        summary_id = extract_summary_id(raw_summary)
-                        print("Extracted Summary ID:", summary_id)
-                        return (
-                            result_dict,
-                            gr.update(value=message, visible=True),
-                            gr.update(visible=True),
-                            summary_id,
-                            gr.update(
-                                value="Processing..."
-                            ),  # Clear and show processing status
-                        )
-                    else:
-                        return (
-                            result_dict,
-                            gr.update(value=message, visible=True),
-                            gr.update(visible=True),
-                            previous_summary_id,  # preserve last summary_id_state
-                            gr.update(
-                                value=""
-                            ),  # Clear status output for search actions
-                        )
+                
+                # Register the tick event
+                polling_timer.tick(
+                    fn=auto_refresh_summary_status,
+                    inputs=[summary_id_state],
+                    outputs=[status_output, toast_output, close_toast_btn],
+                )
 
                 process_btn.click(
                     fn=wrapper_fn,
@@ -335,6 +440,7 @@ def create_ui():
                         close_toast_btn,
                         summary_id_state,
                         status_output,
+                        polling_enabled_state
                     ],
                 )
 
@@ -342,34 +448,15 @@ def create_ui():
                     fn=dismiss_toast, inputs=[], outputs=[toast_output, close_toast_btn]
                 )
 
-                # Function to manually refresh summary status
-                def refresh_summary_status(summary_id):
-                    if not summary_id:
-                        return "**No summary ID available**"
-                    try:
-                        response = fetch_summary_status(summary_id)
-                        if isinstance(response, dict):
-                            # Format as markdown
-                            markdown_output = f"## Summary Status\n\n"
-                            markdown_output += f"**Summary ID:** `{summary_id}`\n\n"
-                            for key, value in response.items():
-                                markdown_output += (
-                                    f"**{key.replace('_', ' ').title()}:** {value}\n\n"
-                                )
-                            return markdown_output
-                        else:
-                            return f"## Summary Status\n\n```json\n{json.dumps(response, indent=2)}\n```"
-                    except Exception as e:
-                        return f"## Error\n\n❌ **Error fetching status:** {str(e)}"
-
                 refresh_status_btn.click(
                     fn=refresh_summary_status,
                     inputs=[summary_id_state],
-                    outputs=[status_output],
+                    outputs=[status_output, toast_output, close_toast_btn],
                 )
 
+
             # Tab 2: AI-Powered Event Viewer
-            with gr.TabItem("AI-Powered Event Viewer"):
+            with gr.TabItem("AI-Powered Event Viewer") as event_viewer_tab:
 
                 with gr.Row():
                     with gr.Column(scale=1):
@@ -417,13 +504,19 @@ def create_ui():
                         </style>
                         """
                         )
-
+                
                 def fetch_and_display_events(camera):
                     nonlocal recent_events
                     recent_events = fetch_events(camera)
                     return display_events(recent_events)
 
                 cam_dropdown_view.change(
+                    fn=fetch_and_display_events,
+                    inputs=[cam_dropdown_view],
+                    outputs=[events_table],
+                )
+                    # 👇 Trigger fetch when tab is opened
+                event_viewer_tab.select(
                     fn=fetch_and_display_events,
                     inputs=[cam_dropdown_view],
                     outputs=[events_table],
@@ -453,7 +546,6 @@ def create_ui():
                 # 🔘 Callback to add rule and show alert
                 def add_rule_callback(camera, label, action):
                     resp = add_rule(camera, label, action)
-                    print(resp)
                     message = resp
                     return gr.update(value=message, visible=True)
 
@@ -466,7 +558,6 @@ def create_ui():
                 # 🔘 Combined logic: show message, sleep, hide
                 def add_rule_with_auto_hide(camera, label, action):
                     resp = add_rule(camera, label, action)
-                    print(resp)
                     message = (
                         resp.get("message") if isinstance(resp, dict) else str(resp)
                     )
@@ -511,19 +602,14 @@ def create_ui():
                     ]
 
                 def delete_selected_rule(evt: gr.SelectData):
-                    print(f"Full SelectData object: {evt}")
-                    print(f"Clicked value: {evt.value}")
-                    print(f"Clicked index (row, col): {evt.index}")
 
                     if evt.value == "🗑️ Delete":
                         try:
                             # Get the full row data from row_value
                             selected_row = evt.row_value
-                            print(f"Selected row data: {selected_row}")
 
                             # Extract rule ID (first column)
                             rule_id = selected_row[0]
-                            print(f"Rule ID to delete: {rule_id}")
 
                             # Delete the rule
                             result = delete_rule_by_id(rule_id)

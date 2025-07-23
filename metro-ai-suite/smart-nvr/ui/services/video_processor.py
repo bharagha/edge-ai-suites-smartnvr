@@ -30,10 +30,8 @@ def parse_input_to_timestamp(input_val, label):
         return None, None
 
 
-def process_video(camera_name, start_time_input, duration_seconds, action, label=None):
+def process_video(camera_name, start_dt, duration_seconds, action, label=None):
     try:
-        # Convert float timestamp to datetime object
-        start_dt = datetime.fromtimestamp(start_time_input)
         logger.info(f"Start time (local): {start_dt}")
         logger.info(f"Start time tzinfo: {getattr(start_dt, 'tzinfo', 'None')}")
 

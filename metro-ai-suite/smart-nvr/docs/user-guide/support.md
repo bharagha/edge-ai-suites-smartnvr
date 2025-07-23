@@ -29,6 +29,10 @@ This page provides comprehensive support and troubleshooting information for the
 - Check the label in frigate config.yaml for the specific camera
 - Check the top_score parameter 
 
+### 5. "No video footage available" warning during Summarize/Search Clip
+- Ensure the browser’s date and time are correctly set and in sync with the system time of the machine running the NVR services.
+- Video clips are only available from the time the NVR services started running. If a past time (before service start) is selected, this warning will be shown.
+
 ## Troubleshooting Docker Containers
 
 ### 1. Containers Failing:
