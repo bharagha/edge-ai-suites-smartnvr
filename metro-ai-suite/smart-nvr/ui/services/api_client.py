@@ -8,14 +8,14 @@ import requests
 from typing import List, Dict, Optional
 
 
-def fetch_cameras():
+def fetch_cameras() -> Dict[str, List[str]]:
     try:
         response = requests.get(f"{API_BASE_URL}/cameras", timeout=10)
         response.raise_for_status()
-        return response.json().get("cameras", [])
+        return response.json()
     except Exception as e:
         logger.error(f"Error fetching cameras: {e}")
-        return []
+        return {}
 
 
 def fetch_events(camera_name):

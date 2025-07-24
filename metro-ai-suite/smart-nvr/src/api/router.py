@@ -15,7 +15,7 @@ vms_service = VmsService(frigate_service, summarization_service)
 
 @router.get("/cameras", summary="Get list of camera names")
 async def get_cameras():
-    return {"cameras": frigate_service.get_camera_names()}
+    return frigate_service.get_camera_names()
 
 
 @router.get("/events", summary="Get list of events for a specific camera")

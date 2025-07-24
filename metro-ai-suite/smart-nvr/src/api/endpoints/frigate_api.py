@@ -3,10 +3,8 @@
 import requests
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
-from typing import Optional
+from typing import Dict
 from fastapi.responses import FileResponse
-import os
-from pathlib import Path
 from config import FRIGATE_BASE_URL
 
 
@@ -14,13 +12,21 @@ class FrigateService:
     def __init__(self, base_url: str = FRIGATE_BASE_URL):
         self.base_url = base_url
 
-    def get_camera_names(self) -> list:
-        """Get list of camera names from Frigate"""
+    def get_camera_names(self) -> Dict[str, list]:
+        """Get mapping of camera names to detected objects from Frigate"""
         try:
             response = requests.get(f"{self.base_url}/api/config")
             response.raise_for_status()
             config = response.json()
-            return list(config.get("cameras", {}).keys())
+            cameras = config.get("cameras", {})
+            
+            camera_object_map = {
+                cam_name: cam_cfg.get("objects", {}).get("track", [])
+                for cam_name, cam_cfg in cameras.items()
+            }
+            print(camera_object_map)
+            return camera_object_map
+
         except requests.exceptions.RequestException as e:
             raise HTTPException(
                 status_code=502, detail=f"Failed to connect to Frigate: {str(e)}"

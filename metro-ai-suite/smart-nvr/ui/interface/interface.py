@@ -210,6 +210,7 @@ def wrapper_fn(
             gr.update(visible=True),
             previous_summary_id,
             gr.update(value=""),
+            False
         )
 
     # Validate start time
@@ -220,6 +221,7 @@ def wrapper_fn(
             gr.update(visible=True),
             previous_summary_id,
             gr.update(value=""),
+            False
         )
     elif start < min_time:
         return (
@@ -228,6 +230,7 @@ def wrapper_fn(
             gr.update(visible=True),
             previous_summary_id,
             gr.update(value=""),
+            False
         )
 
     # Validate duration > 0
@@ -242,6 +245,7 @@ def wrapper_fn(
             gr.update(visible=True),
             previous_summary_id,
             gr.update(value=""),
+            False
         )
 
     # Validate that end time is not in the future
@@ -253,6 +257,7 @@ def wrapper_fn(
             gr.update(visible=True),
             previous_summary_id,
             gr.update(value=""),
+            False
         )
     # Call processing function
     result_dict = process_and_poll(camera, start, duration, action, status_output_box)
@@ -324,8 +329,22 @@ def auto_refresh_summary_status(summary_id):
 
 def create_ui():
     time.sleep(5)  # Ensure the environment is fully initialized
-    camera_list = fetch_cameras()
+    camera_data = fetch_cameras()
+    camera_list = list(camera_data.keys())
     recent_events = []
+    def get_labels_for_camera(camera_name):
+        print(f"📷 Selected camera: {camera_name}")
+        print(f"📷 all camera data: {camera_data}")
+        # Dummy example mapping camera to labels
+        camera_to_labels = {
+            "Front Gate": ["person", "car", "dog"],
+            "Backyard": ["cat", "person"],
+        }
+
+        labels = camera_data.get(camera_name, [])
+        print(f"🏷️ Labels fetched: {labels}")
+
+        return gr.update(choices=labels, value=None)
 
     def format_summary_responses():
         data = fetch_rule_responses()
@@ -526,19 +545,38 @@ def create_ui():
             with gr.TabItem("Auto-Route Events"):
                 with gr.Row():
                     camera_dropdown = gr.Dropdown(
-                        choices=camera_list, label="Select Camera"
+                        choices=camera_list,
+                        value=camera_list[0] if camera_list else None,
+                        label="Select Camera"
                     )
+
                     label_filter = gr.Dropdown(
-                        choices=["all", "person", "car", "animal"],
-                        value="all",
-                        label="Detection Labels",
+                        choices=[],
+                        value=None,
+                        label="Detection Labels"
                     )
+
                     action_dropdown_auto = gr.Dropdown(
                         choices=["Summarize", "Add to Search"],
                         value="Summarize",
                         label="Select Action",
                     )
                     add_rule_btn = gr.Button("➕ Add Rule")
+
+                # 🔄 Trigger label load when dropdown loads (first time)
+                ui.load(
+                    fn=get_labels_for_camera,
+                    inputs=[camera_dropdown],
+                    outputs=[label_filter]
+                )
+
+                # 🔄 Also update labels when dropdown changes
+                camera_dropdown.change(
+                    fn=get_labels_for_camera,
+                    inputs=[camera_dropdown],
+                    outputs=[label_filter]
+                )
+
 
                 with gr.Row():
                     add_rule_alert = gr.Textbox(label="Status", visible=False)
