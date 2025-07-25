@@ -35,7 +35,7 @@ def fetch_events(camera_name):
 def add_rule(camera: str, label: str, action: str) -> Dict:
     # Create a consistent rule ID based on camera, label, and action
     rule_content = f"{camera}-{label}-{action.lower()}"
-    hash = hashlib.md5(rule_content.encode()).hexdigest()[:8]  # 8-char hash
+    hash = hashlib.md5(rule_content.encode(), usedforsecurity=False).hexdigest()[:8]  # 8-char hash
     rule_id = camera + "-" + label + "-" + action + "-" + hash
     # First check if rule already exists
     try:
