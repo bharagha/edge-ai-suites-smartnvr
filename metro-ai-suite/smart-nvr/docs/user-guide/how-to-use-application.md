@@ -47,6 +47,8 @@ The application intelligently fetches video clips from the Frigate NVR system an
 
 #### 2. **AI-Powered Event Viewer**
 
+The AI-Powered Event Viewer tab visibility is controlled by the NVR_GENAI environment variable (default: false). When enabled (NVR_GENAI=true), the application internally uses the Frigate genai configuration (genai.enabled: true) to power the AI features.
+
 Get intelligent summaries of detected objects and events in your video streams.
 
 This feature provides real-time AI analysis and description of events as they occur across your camera network:

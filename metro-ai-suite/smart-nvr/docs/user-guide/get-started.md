@@ -62,6 +62,7 @@ export VLM_SERVING_PORT=<vlm-serving-port>         # Required (typically 9766)
 # MQTT Configuration
 export MQTT_USER=<mqtt-username>               # Required
 export MQTT_PASSWORD=<mqtt-password>           # Required
+export NVR_GENAI=false                         # Optional 
 
 ```
 
