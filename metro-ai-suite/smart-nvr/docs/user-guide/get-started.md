@@ -4,7 +4,11 @@
 
 Smart NVR is a GenAI-powered video analytics application that transforms traditional network video recorders with intelligent event detection and real-time insights at the edge. This guide will walk you through deploying and configuring the application to extract valuable insights from your video data.
 
-## Architecture Overview
+## Prerequisites
+
+### System Requirements
+- System must meet [minimum requirements](./system-requirements.md)
+- 3-4 devices for distributed deployment
 
 Smart NVR operates in a distributed architecture requiring multiple services across 3-4 devices for optimal performance:
 
@@ -14,12 +18,6 @@ Smart NVR operates in a distributed architecture requiring multiple services acr
 | Device 2 | VSS Summary | Video summarization |
 | Device 3 | VLM Microservice | AI-powered event descriptions (optional) |
 | Device 3/4 | Smart NVR App | Main application interface |
-
-## Prerequisites
-
-### System Requirements
-- System must meet [minimum requirements](./system-requirements.md)
-- 3-4 devices for distributed deployment
 
 ### Software Dependencies
 - **Docker**: [Installation Guide](https://docs.docker.com/get-docker/)
