@@ -333,8 +333,6 @@ def create_ui():
     camera_list = list(camera_data.keys())
     recent_events = []
     def get_labels_for_camera(camera_name):
-        print(f"📷 Selected camera: {camera_name}")
-        print(f"📷 all camera data: {camera_data}")
         # Dummy example mapping camera to labels
         camera_to_labels = {
             "Front Gate": ["person", "car", "dog"],
@@ -342,7 +340,6 @@ def create_ui():
         }
 
         labels = camera_data.get(camera_name, [])
-        print(f"🏷️ Labels fetched: {labels}")
 
         return gr.update(choices=labels, value=None)
 
@@ -375,7 +372,8 @@ def create_ui():
                 for item in results:
                     video_id = item.get("video_id", "")
                     message = item.get("message", "")
-                    rows.append([rule_id, video_id, message])
+                    if video_id or message:  # Only add if at least one is non-empty
+                        rows.append([rule_id, video_id, message])
             else:
                 rows.append([rule_id, "", "No search results available."])
         return rows
