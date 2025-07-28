@@ -52,9 +52,6 @@ Required only when enabling AI-powered event descriptions (`NVR_GENAI=true`):
 # Clone the repository
 git clone https://github.com/open-edge-platform/edge-ai-suites.git
 cd edge-ai-suites/metro-ai-suite/smart-nvr
-
-# Build Docker images (required for this release)
-# Follow the build process: https://link-to-build-guide
 ```
 
 > **Important**: This release requires building Docker images from source. See the [build guide](./how-to-build-from-source.md) for detailed instructions.
@@ -70,16 +67,11 @@ export VSS_SUMMARY_PORT=<vss-summary-port>        # Default: 12345
 export VSS_SEARCH_IP=<vss-search-device-ip>
 export VSS_SEARCH_PORT=<vss-search-port>          # Default: 12345
 
-# VLM Service Endpoint (required when NVR_GENAI=true)
-export VLM_SERVING_IP=<vlm-serving-device-ip>
-export VLM_SERVING_PORT=<vlm-serving-port>        # Default: 9766
-
 # MQTT Configuration
 export MQTT_USER=<mqtt-username>
 export MQTT_PASSWORD=<mqtt-password>
 
-# Optional: Enable AI-powered event descriptions
-export NVR_GENAI=false                            # Set to 'true' to enable
+export NVR_GENAI=false                  
 ```
 
 ### Step 3: Launch Application
@@ -121,18 +113,21 @@ genai:
   enabled: true
 ```
 
-#### 2. Set Environment Variable
-```bash
-export NVR_GENAI=true
-```
-
-#### 3. Ensure VLM Service Availability
+#### 2. Ensure VLM Service Availability
 Verify the VLM microservice is running and accessible at the configured endpoint.
 
 > **⚠️ Important Notes**:
 > - This feature is experimental and may be unstable due to underlying Frigate GenAI implementation
 > - Requires VLM microservice to be running
 > - Disabled by default for system stability
+
+#### 3. Set Environment Variable
+```bash
+export NVR_GENAI=true
+export VLM_SERVING_IP=<vlm-serving-device-ip>
+export VLM_SERVING_PORT=<vlm-serving-port>  
+```
+
 
 ### Custom Build Configuration
 
