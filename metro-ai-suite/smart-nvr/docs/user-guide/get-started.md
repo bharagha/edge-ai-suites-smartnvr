@@ -114,11 +114,6 @@ genai:
 #### 2. Ensure VLM Service Availability
 Verify the VLM microservice is running and accessible at the configured endpoint.
 
-> **⚠️ Important Notes**:
-> - This feature is experimental and may be unstable due to underlying Frigate GenAI implementation
-> - Requires VLM microservice to be running
-> - Disabled by default for system stability
-
 #### 3. Set Environment Variable
 ```bash
 export NVR_GENAI=true
@@ -126,6 +121,14 @@ export VLM_SERVING_IP=<vlm-serving-device-ip>
 export VLM_SERVING_PORT=<vlm-serving-port>  
 ```
 
+#### 4. Run the application
+
+Re-run the application after [configuring](./get-started.md#step-2-configure-environment) the rest of environment variables. Ensure that the environment value `export NVR_GENAI=true` is set.
+
+> **⚠️ Important Notes**:
+> - This feature is experimental and may be unstable due to underlying Frigate GenAI implementation
+> - Requires VLM microservice to be running
+> - Disabled by default for system stability
 
 ### Custom Build Configuration
 
