@@ -45,7 +45,7 @@ cd edge-ai-suites/metro-ai-suite/smart-nvr
 
 ### 2. Configure Environment Variables
 
-Set up the required environment variables:
+Set up the required environment variables to run the application:
 
 ```bash
 
@@ -68,6 +68,8 @@ export MQTT_PASSWORD=<mqtt-password>           # Required
 ### 3. Start the Application
 
 Launch all services using the setup script:
+
+> Note: If the images are build using custom [build](./how-to-build-from-source.md#customizing-the-build) flags, use the same environment varibles before running the setup script. 
 
 ```bash
 source setup.sh start
@@ -94,7 +96,7 @@ source setup.sh stop
 
 ## Next Steps
 
-- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./support.md#troubleshooting-docker-deployments),
+- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./Troubleshooting.md#troubleshooting-docker-deployments),
 
 
 ---

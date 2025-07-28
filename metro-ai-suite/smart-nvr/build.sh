@@ -1,9 +1,25 @@
 #!/bin/bash
 
-# Set default values for IMAGE_NAME and TAG if not provided via environment variables
-IMAGE_NAME="${IMAGE_NAME:-intel/nvr-event-router}"
-TAG="${TAG:-latest}"
-tag="${IMAGE_NAME}:${TAG}"
+export REGISTRY_URL=${REGISTRY_URL:-}
+export PROJECT_NAME=${PROJECT_NAME:-}
+export TAG=${TAG:-latest}
+
+[[ -n "$REGISTRY_URL" ]] && REGISTRY_URL="${REGISTRY_URL%/}/"
+[[ -n "$PROJECT_NAME" ]] && PROJECT_NAME="${PROJECT_NAME%/}/"
+REGISTRY="${REGISTRY_URL}${PROJECT_NAME}"
+
+export REGISTRY="${REGISTRY:-}"
+
+# Display info about the registry being used
+if [ -z "$REGISTRY" ]; then
+  echo -e "${YELLOW}Warning: No registry prefix set. Images will be tagged without a registry prefix.${NC}"
+  echo "Using local image names with tag: ${TAG}"
+else
+  echo "Using registry prefix: ${REGISTRY}"
+fi
+
+# Set the tag value
+tag="${REGISTRY}nvr-event-router:${TAG}"
 
 echo "Building $tag image..."
 
