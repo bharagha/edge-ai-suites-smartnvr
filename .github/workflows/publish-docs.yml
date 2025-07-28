@@ -14,6 +14,8 @@ on:
         - loitering-detection
         - pallet-defect-detection
         - weld-porosity
+        - pcb-anomaly-detection
+        - worker-safety-gear-detection
         - wind-turbine-anomaly-detection
 
 permissions: {}
@@ -45,7 +47,7 @@ jobs:
       DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
       DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
     with:
-      docs_directory: metro-ai-suite/smart-parking
+      docs_directory: metro-ai-suite/metro-vision-ai-app-recipe/smart-parking
 
   build_smart-intersection:
     permissions:
@@ -59,7 +61,7 @@ jobs:
       DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
       DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
     with:
-      docs_directory: metro-ai-suite/smart-intersection
+      docs_directory: metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection
       branch_pattern: '^main$'  # Smart Intersection only exists on 'main' branch
 
   build_loitering-detection:
@@ -74,7 +76,7 @@ jobs:
       DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
       DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
     with:
-      docs_directory: metro-ai-suite/loitering-detection
+      docs_directory: metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection
 
   build_pallet-defect-detection:
     permissions:
@@ -88,7 +90,8 @@ jobs:
       DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
       DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
     with:
-      docs_directory: manufacturing-ai-suite/pallet-defect-detection
+      docs_directory: manufacturing-ai-suite/industrial-edge-insights-vision/apps/pallet-defect-detection
+      branch_pattern: '^main$'  # Pallet defect detection only exists on 'main' branch
 
   build_weld-porosity:
     permissions:
@@ -102,7 +105,38 @@ jobs:
       DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
       DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
     with:
-      docs_directory: manufacturing-ai-suite/weld-porosity
+      docs_directory: manufacturing-ai-suite/industrial-edge-insights-vision/apps/weld-porosity
+      branch_pattern: '^main$'  # Weld porosity classification only exists on 'main' branch
+
+  build_pcb-anomaly-detection:
+    permissions:
+      contents: read          # needed for actions/checkout
+      pull-requests: read     # needed for gh pr list
+      issues: write           # needed to post PR comment
+    if: ${{ (github.event.inputs.target == 'pcb-anomaly-detection') || (github.event.inputs.target == 'all-documentation') }}
+    uses: open-edge-platform/orch-ci/.github/workflows/publish-documentation.yml@734970a73e3d6e8d7cd160e2cad6366770f52403
+    secrets:
+      SYS_ORCH_GITHUB: ${{ secrets.SYS_ORCH_GITHUB }}
+      DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
+      DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
+    with:
+      docs_directory: manufacturing-ai-suite/industrial-edge-insights-vision/apps/pcb-anomaly-detection
+      branch_pattern: '^main$'  # PCB Anomaly Detection only exists on 'main' branch
+
+  build_worker-safety-gear-detection:
+    permissions:
+      contents: read          # needed for actions/checkout
+      pull-requests: read     # needed for gh pr list
+      issues: write           # needed to post PR comment
+    if: ${{ (github.event.inputs.target == 'worker-safety-gear-detection') || (github.event.inputs.target == 'all-documentation') }}
+    uses: open-edge-platform/orch-ci/.github/workflows/publish-documentation.yml@734970a73e3d6e8d7cd160e2cad6366770f52403
+    secrets:
+      SYS_ORCH_GITHUB: ${{ secrets.SYS_ORCH_GITHUB }}
+      DOC_AWS_ACCESS_KEY_ID: ${{ secrets.DOC_AWS_ACCESS_KEY_ID }}
+      DOC_AWS_SECRET_ACCESS_KEY: ${{ secrets.DOC_AWS_SECRET_ACCESS_KEY }}
+    with:
+      docs_directory: manufacturing-ai-suite/industrial-edge-insights-vision/apps/worker-safety-gear-detection
+      branch_pattern: '^main$'  # Worker safety detection only exists on 'main' branch
 
   build_wind-turbine-anomaly-detection:
     permissions:

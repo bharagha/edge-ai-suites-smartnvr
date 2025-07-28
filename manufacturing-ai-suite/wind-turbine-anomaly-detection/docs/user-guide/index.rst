@@ -22,7 +22,6 @@ Wind Turbine Anomaly Detection
    
    how-to-build-from-source
    how-to-deploy-with-helm
-   how-to-deploy-with-edge-orchestrator
 
 .. toctree::
    :caption: Advanced Configurations
@@ -31,6 +30,7 @@ Wind Turbine Anomaly Detection
    how-to-configure-alerts
    how-to-enable-system-metrics
    how-to-update-config
+   how-to-create-a-new-sample-app
 
 .. toctree::
    :caption: Release Notes

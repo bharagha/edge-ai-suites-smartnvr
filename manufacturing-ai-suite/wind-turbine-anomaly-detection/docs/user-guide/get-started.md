@@ -40,9 +40,16 @@ To configure Docker:
      sudo systemctl daemon-reload
      sudo systemctl restart docker
      ```
+
+## Clone source code
+
+```bash
+git clone https://github.com/open-edge-platform/edge-ai-suites.git
+cd edge-ai-suites/manufacturing-ai-suite/wind-turbine-anomaly-detection
+```
 ## Data flow explanation
 
-The data flow remains same as that explained in the [Overview.md](./Overview.md).
+The data flow remains same as that explained in the [High-Level Architecture](./how-it-works.md#high-level-architecture).
 Let's specifically talk about the wind turbine anomaly detection use case here by ingesting the data using the
 OPC-UA simulator and publishing the anomaly alerts to MQTT broker.
 
@@ -89,6 +96,7 @@ The `udfs` section specifies the details of the UDFs used in the task.
 | `name`  | The name of the UDF script.                                                 | `"windturbine_anomaly_detector"`       |
 | `models`| The name of the model file used by the UDF.                                 | `"windturbine_anomaly_detector.pkl"`   |
 
+> **Note:** The maximum allowed size for `config.json` is 5 KB.
 ---
 
 **Alerts Configuration**:
@@ -125,13 +133,6 @@ The `mqtt` section specifies the MQTT broker details for sending alerts.
    - The `windturbine_anomaly_detector.pkl` is a model built using the RandomForestRegressor Algo.
      More details on how it is built is accessible at `edge-ai-suites/manufacturing-ai-suite/wind-turbine-anomaly-detection/training/windturbine/README.md`
 
-## Clone source code
-
-```bash
-git clone https://github.com/open-edge-platform/edge-ai-suites.git
-cd edge-ai-suites/manufacturing-ai-suite/wind-turbine-anomaly-detection
-```
-
 ## Deploy with Docker Compose
 
 1. Update the following fields in `.env`:
@@ -151,6 +152,11 @@ cd edge-ai-suites/manufacturing-ai-suite/wind-turbine-anomaly-detection
 >  - The sample app is deployed by pulling the pre-built container images of the sample app 
 >    from the docker hub OR from the internal container registry (login to the docker registry from cli and configure `DOCKER_REGISTRY`
 >    env variable in `.env` file at `edge-ai-suites/manufacturing-ai-suite/wind-turbine-anomaly-detection`)
+>  - The `CONTINUOUS_SIMULATOR_INGESTION` variable in the `.env` file (for Docker Compose) and in `helm/values.yaml` (for Helm deployments) 
+>    is set to `true` by default, enabling continuous looping of simulator data. To ingest the simulator data only once (without looping), 
+>    set this variable to `false`.
+>  - If `CONTINUOUS_SIMULATOR_INGESTION` is set to `false`, you may see the `[inputs.opcua] status not OK for node` message in the `telegraf` 
+>    logs for OPC-UA ingestion after a single data ingestion loop. This message can be ignored.
 
    - **Using OPC-UA ingestion**:
      ```bash
@@ -241,7 +247,6 @@ make status
 ## Other Deployment options
 
 - [How to Deploy with Helm](./how-to-deploy-with-helm.md): Guide for deploying the sample application on a k8s cluster using Helm.
-- [How to Deploy with Edge Orchestrator](./how-to-deploy-with-edge-orchestrator.md): Guide for deploying the sample application using Edge Manageability Framework
 
 ## Advanced setup
 

@@ -46,44 +46,44 @@ check_env_variables:
 					echo "INFLUXDB_USERNAME must not be admin."; \
 					exit 1; \
 				fi; \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{5,}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "INFLUXDB_USERNAME must be at least 5 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z]{5,}$$"; then \
+					echo "INFLUXDB_USERNAME must contain only alphabets and be at least 5 characters minimum"; \
 					exit 1; \
 				fi \
 				;; \
 			INFLUXDB_PASSWORD) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "INFLUXDB_PASSWORD must be at least 10 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]" || ! echo "$$value" | grep -q "[A-Za-z]"; then \
+					echo "The INFLUXDB_PASSWORD length must be a minimum of 10 alphanumeric characters with at least one digit"; \
 					exit 1; \
 				fi \
 				;; \
 			VISUALIZER_GRAFANA_USER) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{5,}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "VISUALIZER_GRAFANA_USER must be at least 5 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z]{5,}$$"; then \
+					echo "VISUALIZER_GRAFANA_USER must contain only alphabets and be at least 5 characters minimum"; \
 					exit 1; \
 				fi \
 				;; \
 			VISUALIZER_GRAFANA_PASSWORD) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "VISUALIZER_GRAFANA_PASSWORD must be at least 10 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]" || ! echo "$$value" | grep -q "[A-Za-z]"; then \
+					echo "VISUALIZER_GRAFANA_PASSWORD length must be a minimum of 10 alphanumeric characters with at least one digit"; \
 					exit 1; \
 				fi \
 				;; \
 			MR_PSQL_PASSWORD) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{5,10}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "MR_PSQL_PASSWORD must be 5-10 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]" || ! echo "$$value" | grep -q "[A-Za-z]"; then \
+					echo "MR_PSQL_PASSWORD length must be a minimum of 10 alphanumeric characters with atleast one digit"; \
 					exit 1; \
 				fi \
 				;; \
 			MR_MINIO_ACCESS_KEY) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{5,10}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "MR_MINIO_ACCESS_KEY must be 5-10 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]" || ! echo "$$value" | grep -q "[A-Za-z]"; then \
+					echo "MR_MINIO_ACCESS_KEY length must be a minimum of 10 alphanumeric characters with atleast one digit"; \
 					exit 1; \
 				fi \
 				;; \
 			MR_MINIO_SECRET_KEY) \
-				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{8,16}$$" || ! echo "$$value" | grep -q "[0-9]"; then \
-					echo "MR_MINIO_SECRET_KEY must be 8-16 alphanumeric chars and contain at least one digit."; \
+				if ! echo "$$value" | grep -Eq "^[A-Za-z0-9]{10,}$$" || ! echo "$$value" | grep -q "[0-9]" || ! echo "$$value" | grep -q "[A-Za-z]"; then \
+					echo "MR_MINIO_SECRET_KEY length must be a minimum of 10 alphanumeric characters with atleast one digit"; \
 					exit 1; \
 				fi \
 				;; \
@@ -92,7 +92,6 @@ check_env_variables:
 
 .PHONY: up_mqtt_ingestion
 up_mqtt_ingestion: check_env_variables down
-	docker compose pull --ignore-pull-failures 2>&1 | grep -v 'WARNING:'
 	@export TELEGRAF_INPUT_PLUGIN=$$(if [ $(INCLUDE) = 'validation' ]; then echo "mqtt_consumer:net:cpu:disk:docker:diskio:kernel:mem:processes:swap:system"; else echo "mqtt_consumer"; fi); \
 	echo "Starting Docker containers..."; \
 	if [ $(INCLUDE) = 'validation' ]; then \
@@ -104,7 +103,6 @@ up_mqtt_ingestion: check_env_variables down
 # Run Docker containers
 .PHONY: up_opcua_ingestion
 up_opcua_ingestion: check_env_variables down
-	docker compose pull --ignore-pull-failures 2>&1 | grep -v 'WARNING:'
 	@export TELEGRAF_INPUT_PLUGIN=$$(if [ $(INCLUDE) = 'validation' ]; then echo "opcua:net:cpu:disk:docker:diskio:kernel:mem:processes:swap:system"; else echo "opcua"; fi); \
 	echo "Starting Docker containers..."; \
 	if [ $(INCLUDE) = 'validation' ]; then \
