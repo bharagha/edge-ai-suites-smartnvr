@@ -86,6 +86,7 @@ services:
       MODE: "ui" 
       API_BASE_URL: "http://${HOST_IP}:8000" 
       EVENT_POLL_INTERVAL: "10"
+      NVR_GENAI: ${NVR_GENAI}
       no_proxy: ${no_proxy}, frigate, nvr-event-router, ${VSS_SUMMARY_IP}, ${VLM_SERVING_IP}
       
   mqtt-broker:

@@ -328,6 +328,7 @@ def auto_refresh_summary_status(summary_id):
         return f"## Error\n\n❌ **Error fetching status:** {str(e)}", f"❌ Error: {str(e)}", gr.update(visible=True)
 
 def create_ui():
+    show_genai_tab = os.getenv("NVR_GENAI", "false").lower() == "true"
     time.sleep(5)  # Ensure the environment is fully initialized
     camera_data = fetch_cameras()
     camera_list = list(camera_data.keys())
@@ -471,73 +472,73 @@ def create_ui():
                     outputs=[status_output, toast_output, close_toast_btn],
                 )
 
+            if show_genai_tab:
+                # Tab 2: AI-Powered Event Viewer
+                with gr.TabItem("AI-Powered Event Viewer") as event_viewer_tab:
 
-            # Tab 2: AI-Powered Event Viewer
-            with gr.TabItem("AI-Powered Event Viewer") as event_viewer_tab:
-
-                with gr.Row():
-                    with gr.Column(scale=1):
-                        cam_dropdown_view = gr.Dropdown(
-                            choices=camera_list,
-                            label="Select Camera",
-                            interactive=True,
-                            container=True,
-                        )
-                    with gr.Column(scale=2):
-                        gr.HTML("")  # Placeholder for spacing or future use
-                with gr.Row():
-                    with gr.Column(scale=2):
-                        events_table = gr.Dataframe(
-                            headers=[
-                                "Label",
-                                "Start Time",
-                                "End Time",
-                                "Top Score",
-                                "Description",
-                                "Thumbnail",
-                            ],
-                            datatype=["str", "str", "str", "str", "str", "html"],
-                            label="Events",
-                            interactive=False,
-                            elem_id="events-table",
-                            elem_classes="events-table",
-                        )
-                        gr.HTML(
+                    with gr.Row():
+                        with gr.Column(scale=1):
+                            cam_dropdown_view = gr.Dropdown(
+                                choices=camera_list,
+                                label="Select Camera",
+                                interactive=True,
+                                container=True,
+                            )
+                        with gr.Column(scale=2):
+                            gr.HTML("")  # Placeholder for spacing or future use
+                    with gr.Row():
+                        with gr.Column(scale=2):
+                            events_table = gr.Dataframe(
+                                headers=[
+                                    "Label",
+                                    "Start Time",
+                                    "End Time",
+                                    "Top Score",
+                                    "Description",
+                                    "Thumbnail",
+                                ],
+                                datatype=["str", "str", "str", "str", "str", "html"],
+                                label="Events",
+                                interactive=False,
+                                elem_id="events-table",
+                                elem_classes="events-table",
+                            )
+                            gr.HTML(
+                                """
+                            <style>
+                            .events-table table td:nth-child(5) {
+                                white-space: normal !important;
+                                word-wrap: break-word !important;
+                                max-width: 300px;
+                            }
+                            .events-table table td:nth-child(6) {
+                                text-align: center;
+                                vertical-align: middle;
+                            }
+                            .events-table table td:nth-child(6) img {
+                                border-radius: 4px;
+                                border: 1px solid #ddd;
+                            }
+                            </style>
                             """
-                        <style>
-                        .events-table table td:nth-child(5) {
-                            white-space: normal !important;
-                            word-wrap: break-word !important;
-                            max-width: 300px;
-                        }
-                        .events-table table td:nth-child(6) {
-                            text-align: center;
-                            vertical-align: middle;
-                        }
-                        .events-table table td:nth-child(6) img {
-                            border-radius: 4px;
-                            border: 1px solid #ddd;
-                        }
-                        </style>
-                        """
-                        )
-                
-                def fetch_and_display_events(camera):
-                    nonlocal recent_events
-                    recent_events = fetch_events(camera)
-                    return display_events(recent_events)
+                            )
+                    
+                    def fetch_and_display_events(camera):
+                        nonlocal recent_events
+                        recent_events = fetch_events(camera)
+                        return display_events(recent_events)
 
-                cam_dropdown_view.change(
-                    fn=fetch_and_display_events,
-                    inputs=[cam_dropdown_view],
-                    outputs=[events_table],
-                )
-                    # 👇 Trigger fetch when tab is opened
-                event_viewer_tab.select(
-                    fn=fetch_and_display_events,
-                    inputs=[cam_dropdown_view],
-                    outputs=[events_table],
-                )
+                    cam_dropdown_view.change(
+                        fn=fetch_and_display_events,
+                        inputs=[cam_dropdown_view],
+                        outputs=[events_table],
+                    )
+                        # 👇 Trigger fetch when tab is opened
+                    event_viewer_tab.select(
+                        fn=fetch_and_display_events,
+                        inputs=[cam_dropdown_view],
+                        outputs=[events_table],
+                    )
 
             # Tab 3: Auto-Route Rules
             with gr.TabItem("Auto-Route Events"):
