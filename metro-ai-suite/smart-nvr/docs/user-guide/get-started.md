@@ -96,7 +96,7 @@ source setup.sh stop
 
 ## Next Steps
 
-- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./support.md#troubleshooting-docker-deployments),
+- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./Troubleshooting.md#troubleshooting-docker-deployments),
 
 
 ---

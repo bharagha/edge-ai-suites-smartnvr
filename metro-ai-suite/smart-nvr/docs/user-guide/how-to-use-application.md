@@ -83,6 +83,6 @@ This powerful automation feature enables intelligent event management and workfl
 
 ## Additional Resources
 
-- **[Troubleshooting Guide](./support.md)** - Resolve common deployment and runtime issues
+- **[Troubleshooting Guide](./Troubleshooting.md)** - Resolve common deployment and runtime issues
 - **[Getting Started](./get-started.md)** - Complete initial setup requirements
 - **[Build from Source](./how-to-build-from-source.md)** - Build and deploy the application manually
