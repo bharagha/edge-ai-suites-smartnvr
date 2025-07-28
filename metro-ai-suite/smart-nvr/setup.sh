@@ -10,6 +10,25 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+export REGISTRY_URL=${REGISTRY_URL:-}
+export PROJECT_NAME=${PROJECT_NAME:-}
+export TAG=${TAG:-latest}
+
+[[ -n "$REGISTRY_URL" ]] && REGISTRY_URL="${REGISTRY_URL%/}/"
+[[ -n "$PROJECT_NAME" ]] && PROJECT_NAME="${PROJECT_NAME%/}/"
+REGISTRY="${REGISTRY_URL}${PROJECT_NAME}"
+
+export REGISTRY="${REGISTRY:-}"
+
+# Display info about the registry being used
+if [ -z "$REGISTRY" ]; then
+  echo -e "${YELLOW}Warning: No registry prefix set. Images will be tagged without a registry prefix.${NC}"
+  echo "Using local image names with tag: ${TAG}"
+else
+  echo "Using registry prefix: ${REGISTRY}"
+fi
+
+
 # Helper functions for colored output
 print_error() {
     echo -e "${RED}Error: $1${NC}"
