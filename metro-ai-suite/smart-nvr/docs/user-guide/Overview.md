@@ -32,7 +32,8 @@ The diagram shows the key components of the Smart NVR application. The descripti
 
 - **Frigate NVR**:
   - Frigate NVR is used as reference NVR as a proxy for any NVR that can be converted to Smart NVR. Refer to [Frigate](https://frigate.video/) documentation for details on Frigate.
-  - Frigate is responsible for accepting live video input from different _Cameras_ and store the same in _Video store_. Frigate supports [APIs](https://docs.frigate.video/integrations/api/frigate-http-api) that can be used to get access to the videos stored in the Video store. 
+  - Frigate is responsible for accepting live video input from different _Cameras_ and store the same in _Video store_. Frigate supports [APIs](https://docs.frigate.video/integrations/api/frigate-http-api) that can be used to get access to the videos stored in the Video store.
+  - **[Experimental] GenAI Integration**: When enabled (`NVR_GENAI=true`), Frigate can leverage the OEP VLM Microservice to generate AI-powered event descriptions for enhanced video analytics.
   
 - **VMS Event Router**:
 
@@ -48,6 +49,7 @@ The diagram shows the key components of the Smart NVR application. The descripti
 - **Feature 1**: Architecture based on modular microservices enables composability and reconfiguration.
 - **Feature 2**: Connects to available video analytics pipeline applications like [Video search and summary](https://github.com/open-edge-platform/edge-ai-libraries/tree/main/sample-applications/video-search-and-summarization) sample application and [Image based Video Search](https://github.com/open-edge-platform/edge-ai-suites/tree/main/metro-ai-suite/image-based-video-search) sample application.
 - **Feature 3**: Independent Gradio based UI allows extending the capability of Smart NVR sample application independent of the integrated video analytics sample applications.
+- **Feature 4**: **[Experimental] AI-Powered Event Descriptions**: Optional integration with OEP VLM Microservice to generate intelligent, context-aware descriptions of detected events using vision-language models.
 
 ## Learn More
 

@@ -76,6 +76,13 @@ get_host_ip() {
 
 # Function to validate required environment variables
 validate_environment() {    
+    # Check for NVR_GENAI flag
+    if [ -z "${NVR_GENAI}" ]; then
+        print_error "NVR_GENAI environment variable is required"
+        print_info "Please set it to 'true' or 'false' to enable/disable NVR GenAI features"
+        return 1
+    fi
+    
     # Check for VSS IP and port
     if [ -z "${VSS_SUMMARY_IP}" ]; then
         print_error "VSS_SUMMARY_IP environment variable is required"
@@ -102,16 +109,18 @@ validate_environment() {
     fi
     
     # Check for VLM Model Endpoint IP and port
-    if [ -z "${VLM_SERVING_IP}" ]; then
-        print_error "VLM_SERVING_IP environment variable is required"
-        print_info "Please set it to the IP address of your VLM Model Endpoint"
-        return 1
-    fi
-    
-    if [ -z "${VLM_SERVING_PORT}" ]; then
-        print_error "VLM_SERVING_PORT environment variable is required"
-        print_info "Please set it to the port of your VLM Model Endpoint (typically 9766)"
-        return 1
+    if [ "${NVR_GENAI}" = "True" ] || [ "${NVR_GENAI}" = "true" ]; then
+        if [ -z "${VLM_SERVING_IP}" ]; then
+            print_error "VLM_SERVING_IP environment variable is required when NVR_GENAI is enabled"
+            print_info "Please set it to the IP address of your VLM Model Endpoint"
+            return 1
+        fi
+        
+        if [ -z "${VLM_SERVING_PORT}" ]; then
+            print_error "VLM_SERVING_PORT environment variable is required when NVR_GENAI is enabled"
+            print_info "Please set it to the port of your VLM Model Endpoint (typically 9766)"
+            return 1
+        fi
     fi
     
     # Check for MQTT user and password

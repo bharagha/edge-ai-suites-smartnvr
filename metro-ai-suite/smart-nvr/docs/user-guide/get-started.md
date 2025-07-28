@@ -2,102 +2,144 @@
 
 ## Overview
 
-Smart NVR is a GenAI-powered video analytics application that enhances traditional network video recorders with intelligent event detection and real-time insights at the edge. This guide will help you quickly deploy and configure the application to start extracting valuable insights from your video data.
+Smart NVR is a GenAI-powered video analytics application that transforms traditional network video recorders with intelligent event detection and real-time insights at the edge. This guide will walk you through deploying and configuring the application to extract valuable insights from your video data.
+
+## Architecture Overview
+
+Smart NVR operates in a distributed architecture requiring multiple services across 3-4 devices for optimal performance:
+
+| Device | Service | Purpose |
+|--------|---------|---------|
+| Device 1 | VSS Search | Video search functionality |
+| Device 2 | VSS Summary | Video summarization |
+| Device 3 | VLM Microservice | AI-powered event descriptions (optional) |
+| Device 3/4 | Smart NVR App | Main application interface |
 
 ## Prerequisites
 
 ### System Requirements
 - System must meet [minimum requirements](./system-requirements.md)
-- Docker installed ([Installation Guide](https://docs.docker.com/get-docker/))
-- Docker configured to run without sudo ([Post-install guide](https://docs.docker.com/engine/install/linux-postinstall/))
-- Git installed ([Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git))
+- 3-4 devices for distributed deployment
+
+### Software Dependencies
+- **Docker**: [Installation Guide](https://docs.docker.com/get-docker/)
+  - Must be configured to run without sudo ([Post-install guide](https://docs.docker.com/engine/install/linux-postinstall/))
+- **Git**: [Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 ### Required Services
-Ensure these services are running before setting up Smart NVR:
 
-**Multi-Device Setup Requirements**: The setup needs 3-4 devices for optimal performance:
-- **Device 1**: Runs VSS in Search Only Mode
-- **Device 2**: Runs VSS in Summary Only Mode  
-- **Device 3**: Runs VLM microservice with the model defined in frigate [config file](../../resources/frigate-config/config.yml)
-- **Device 3 or 4**: Runs the Smart NVR application
+Before setting up Smart NVR, ensure these services are running on their respective devices:
 
-> Note: You can use any supported VLM model. Just ensure the same model is being used in the frigate [config file](../../resources/frigate-config/config.yml). 
+#### 1. VSS (Video Search and Summarization) Services
+Deploy these on separate devices:
+- **VSS Search**: Handles video search functionality
+- **VSS Summary**: Provides video summarization capabilities
 
-> NOTE: While deploying the VLM service, you can use `VLM_MAX_COMPLETION_TOKENS` to limit the response length. 
+📖 [VSS Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/sample-applications/video-search-and-summarization/docs/user-guide/get-started.md)
 
-**Service Details**:
-- **VLM Microservice**: Must be running for AI-Powered Event Viewer. 
-  - 📖 [VLM Serving Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/microservices/vlm-openvino-serving/docs/user-guide/get-started.md) 
-- **VSS (Video Search and Summarization) Services**:
-  - **VSS Search**: Running on one device for video search functionality
-  - **VSS Summary**: Running on a separate device for video summarization
-  - 📖 [VSS Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/sample-applications/video-search-and-summarization/docs/user-guide/get-started.md)
+#### 2. VLM Microservice (Optional)
+Required only when enabling AI-powered event descriptions (`NVR_GENAI=true`):
+- Runs the VLM model defined in the frigate [config file](../../resources/frigate-config/config.yml)
+- Use `VLM_MAX_COMPLETION_TOKENS` to limit response length during deployment
+
+📖 [VLM Serving Documentation](https://github.com/open-edge-platform/edge-ai-libraries/blob/main/microservices/vlm-openvino-serving/docs/user-guide/get-started.md)
 
 ## Quick Start
 
-### 1. Clone the Repository
+### Step 1: Clone and Build
 
 ```bash
+# Clone the repository
 git clone https://github.com/open-edge-platform/edge-ai-suites.git
 cd edge-ai-suites/metro-ai-suite/smart-nvr
+
+# Build Docker images (required for this release)
+# Follow the build process: https://link-to-build-guide
 ```
-> **Note**: This release uses a build script that directly builds the Docker images. Follow the [setup process](./how-to-build-from-source.md) to build the image before running the application.
 
-### 2. Configure Environment Variables
+> **Important**: This release requires building Docker images from source. See the [build guide](./how-to-build-from-source.md) for detailed instructions.
 
-Set up the required environment variables to run the application:
+### Step 2: Configure Environment
+
+Set up the required environment variables:
 
 ```bash
+# VSS Service Endpoints
+export VSS_SUMMARY_IP=<vss-summary-device-ip>
+export VSS_SUMMARY_PORT=<vss-summary-port>        # Default: 12345
+export VSS_SEARCH_IP=<vss-search-device-ip>
+export VSS_SEARCH_PORT=<vss-search-port>          # Default: 12345
 
-# Video Search and Summarization Services
-export VSS_SUMMARY_IP=<vss-summary-ip>         # Required
-export VSS_SUMMARY_PORT=<vss-summary-port>     # Required (typically 12345)
-export VSS_SEARCH_IP=<vss-search-ip>           # Required
-export VSS_SEARCH_PORT=<vss-search-port>       # Required (typically 12345)
-
-# VLM Model Endpoint
-export VLM_SERVING_IP=<vlm-serving-ip>             # Required
-export VLM_SERVING_PORT=<vlm-serving-port>         # Required (typically 9766)
+# VLM Service Endpoint (required when NVR_GENAI=true)
+export VLM_SERVING_IP=<vlm-serving-device-ip>
+export VLM_SERVING_PORT=<vlm-serving-port>        # Default: 9766
 
 # MQTT Configuration
-export MQTT_USER=<mqtt-username>               # Required
-export MQTT_PASSWORD=<mqtt-password>           # Required
-export NVR_GENAI=false                         # Optional 
+export MQTT_USER=<mqtt-username>
+export MQTT_PASSWORD=<mqtt-password>
 
+# Optional: Enable AI-powered event descriptions
+export NVR_GENAI=false                            # Set to 'true' to enable
 ```
 
-### 3. Start the Application
-
-Launch all services using the setup script:
-
-> Note: If the images are build using custom [build](./how-to-build-from-source.md#customizing-the-build) flags, use the same environment varibles before running the setup script. 
+### Step 3: Launch Application
 
 ```bash
+# Start all services
 source setup.sh start
 ```
 
-This will start all required services as shown below:
+This launches all required containers:
 
 ![Services overview](./_images/containers.png)
 
-### 4. Access the Application
+### Step 4: Access the Interface
 
 Open your browser and navigate to:
 ```
 http://<host-ip>:7860
 ```
 
-### 5. Stop the Application
-
-To stop all services:
+### Step 5: Stop Services
 
 ```bash
+# Stop all services when done
 source setup.sh stop
 ```
 
+## Advanced Configuration
+
+### Enabling AI-Powered Event Descriptions
+
+To enable Smart NVR's GenAI capabilities for intelligent event descriptions:
+
+#### 1. Update Frigate Configuration
+Modify `resources/frigate-config/config.yml`:
+
+```yaml
+genai:
+  enabled: true
+```
+
+#### 2. Set Environment Variable
+```bash
+export NVR_GENAI=true
+```
+
+#### 3. Ensure VLM Service Availability
+Verify the VLM microservice is running and accessible at the configured endpoint.
+
+> **⚠️ Important Notes**:
+> - This feature is experimental and may be unstable due to underlying Frigate GenAI implementation
+> - Requires VLM microservice to be running
+> - Disabled by default for system stability
+
+### Custom Build Configuration
+
+If using custom [build flags](./how-to-build-from-source.md#customizing-the-build), ensure the same environment variables are set before running the setup script.
+
 ## Next Steps
 
-- **Troubleshooting**: Check the logs of individual services if you encounter issues. More information is present [here](./Troubleshooting.md#troubleshooting-docker-deployments),
-
-
+1. **Explore Features**: Learn about application capabilities in the [How to Use Guide](./how-to-use-application.md)
+2. **Troubleshooting**: If you encounter issues, check the [Troubleshooting Guide](./Troubleshooting.md)
 ---
