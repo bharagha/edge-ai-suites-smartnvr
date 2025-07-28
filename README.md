@@ -17,28 +17,32 @@ These suites simplify the creation of custom AI solutions for specific industrie
 
 [The Retail AI Suite](retail-ai-suite) accelerates hardware decisions for Retail AI workloads at the edge, featuring use cases such as self-checkout and loss prevention.
 
-[The Media & Entertainment AI Suite](media-and-entertainment-ai-suite) provides libraries and sample applications to accelerate solution development for high-performance, high-quality, live video production helping improve viewer experience.
+[The Media & Entertainment AI Suite](media-and-entertainment-ai-suite) provides libraries and sample applications to accelerate solution development for high-performance, high-quality, and live video production, which improves viewer experience.
 
 
 The Edge AI Suites project hosts a collection of sample applications organized as follows:
 
 | Suite | Sample Application | Get Started | Developers Docs |
 |:------|:-------------------|:------------|:----------------|
-| Metro AI Suite | [Holographic Sensor Fusion](metro-ai-suite/holographic-sensor-fusion) | [Link](metro-ai-suite/holographic-sensor-fusion/docs/user-guide/Get-Started-Guide.md) | [Customize the Application](metro-ai-suite/holographic-sensor-fusion/docs/user-guide/Advanced-User-Guide.md) |
-| Metro AI Suite | [Loitering Detection](metro-ai-suite/loitering-detection) | [Link](metro-ai-suite/loitering-detection/docs/user-guide/get-started.md) | [Customize the Application](metro-ai-suite/loitering-detection/docs/user-guide/how-to-customize-application.md) |
+| Metro AI Suite | [Loitering Detection](metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection) | [Link](metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection/docs/user-guide/get-started.md) | [Deployment](metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection/docs/user-guide/how-to-deploy-with-helm.md) |
 | Metro AI Suite | [Image-Based Video Search](metro-ai-suite/image-based-video-search) | [Link](metro-ai-suite/image-based-video-search/docs/user-guide/get-started.md) | [Build](metro-ai-suite/image-based-video-search/docs/user-guide/how-to-build-source.md) and [Deployment](metro-ai-suite/image-based-video-search/docs/user-guide/how-to-deploy-helm.md) instructions |
 | Metro AI Suite | [Interactive Digital Avatar](metro-ai-suite/interactive-digital-avatar) | [Link](metro-ai-suite/interactive-digital-avatar/docs/get-started.md) | [Tutorials](metro-ai-suite/interactive-digital-avatar/docs/tutorials.md) |
-| Metro AI Suite | [Smart Intersection](metro-ai-suite/smart-intersection) [*](#license) | [Link](metro-ai-suite/smart-intersection/docs/user-guide/get-started.md) | [Deployment](metro-ai-suite/smart-intersection/docs/user-guide/how-to-deploy-docker.md) |
+| Metro AI Suite | [Sensor Fusion For Traffic Management](metro-ai-suite/sensor-fusion-for-traffic-management) | [Link](metro-ai-suite/sensor-fusion-for-traffic-management/docs/user-guide/Get-Started-Guide.md) | [Customize the Application](metro-ai-suite/sensor-fusion-for-traffic-management/docs/user-guide/Advanced-User-Guide.md) |
+| Metro AI Suite | [Smart Intersection](metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection) [*](#license) | [Link](metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/docs/user-guide/get-started.md) | [Deployment](metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/docs/user-guide/how-to-deploy-helm.md) |
 | Metro AI Suite | [Smart NVR](metro-ai-suite/smart-nvr) | [Link](metro-ai-suite/smart-nvr/docs/user-guide/get-started.md) | [Deployment](metro-ai-suite/smart-nvr/docs/user-guide/how-to-build-from-source.md) |
-| Metro AI Suite | [Smart Parking](metro-ai-suite/smart-parking) | [Link](metro-ai-suite/smart-parking/docs/user-guide/get-started.md) | [Customize the Application](metro-ai-suite/smart-parking/docs/user-guide/how-to-customize-application.md) |
+| Metro AI Suite | [Smart Parking](metro-ai-suite/metro-vision-ai-app-recipe/smart-parking) | [Link](metro-ai-suite/metro-vision-ai-app-recipe/smart-parking/docs/user-guide/get-started.md) | [Deployment](metro-ai-suite/metro-vision-ai-app-recipe/smart-parking/docs/user-guide/how-to-deploy-with-helm.md) |
+| Metro AI Suite | [Video Processing for NVR](metro-ai-suite/video-processing-for-nvr) | [Link](metro-ai-suite/video-processing-for-nvr/docs/user-guide/get-started-guide.md) | [Advanced Guide](metro-ai-suite/video-processing-for-nvr/docs/user-guide/Overview.md) |
 | Metro AI Suite | [Visual Search Question and Answering](metro-ai-suite/visual-search-question-and-answering) | [Link](metro-ai-suite/visual-search-question-and-answering/docs/user-guide/get-started.md) | [Tutorials](metro-ai-suite/visual-search-question-and-answering/docs/user-guide/tutorials.md) |
-| Manufacturing AI Suite | [Pallet Defect Detection](manufacturing-ai-suite/pallet-defect-detection) | [Link](manufacturing-ai-suite/pallet-defect-detection#get-started) | [Customize the Application](manufacturing-ai-suite/pallet-defect-detection/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
-| Manufacturing AI Suite | [Weld Porosity](manufacturing-ai-suite/weld-porosity) | [Link](manufacturing-ai-suite/weld-porosity#get-started) | [Customize the Application](manufacturing-ai-suite/weld-porosity/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
+| Manufacturing AI Suite | [HMI Augmented worker](manufacturing-ai-suite/hmi-augmented-worker/) | [Link](manufacturing-ai-suite/hmi-augmented-worker/docs/user-guide/get-started.md) | [Build instructions](manufacturing-ai-suite/hmi-augmented-worker/docs/user-guide/how-to-build-from-source.md) |
+| Manufacturing AI Suite | [Pallet Defect Detection](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pallet-defect-detection) | [Link](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pallet-defect-detection/docs/user-guide/get-started.md) | [Customize the Application](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pallet-defect-detection/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
+| Manufacturing AI Suite | [PCB Anomaly Detection](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pcb-anomaly-detection) | [Link](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pcb-anomaly-detection/docs/user-guide/get-started.md) | [Customize the Application](manufacturing-ai-suite/industrial-edge-insights-vision/apps/pcb-anomaly-detection/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
+| Manufacturing AI Suite | [Weld Porosity](manufacturing-ai-suite/industrial-edge-insights-vision/apps/weld-porosity) | [Link](manufacturing-ai-suite/industrial-edge-insights-vision/apps/weld-porosity/docs/user-guide/get-started.md) | [Customize the Application](manufacturing-ai-suite/industrial-edge-insights-vision/apps/weld-porosity/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
+| Manufacturing AI Suite | [Worker Safety Gear Detection](manufacturing-ai-suite/industrial-edge-insights-vision/apps/worker-safety-gear-detection) | [Link](manufacturing-ai-suite/industrial-edge-insights-vision/apps/worker-safety-gear-detection/docs/user-guide/get-started.md) | [Customize the Application](manufacturing-ai-suite/industrial-edge-insights-vision/apps/worker-safety-gear-detection/docs/user-guide/how-to-use-an-ai-model-and-video-file-of-your-own.md) |
 | Manufacturing AI Suite | [Wind Turbine Anomaly Detection](manufacturing-ai-suite/wind-turbine-anomaly-detection/) | [Link](manufacturing-ai-suite/wind-turbine-anomaly-detection/docs/user-guide/get-started.md) | [Docker deployment](manufacturing-ai-suite/wind-turbine-anomaly-detection/docs/user-guide/get-started.md#deploy-with-docker-compose-single-node) and [Helm deployment](manufacturing-ai-suite/wind-turbine-anomaly-detection/docs/user-guide/how-to-deploy-with-helm.md) |
 | Retail AI Suite | [Automated Self Checkout](https://github.com/intel-retail/automated-self-checkout) | [Link](https://github.com/intel-retail/automated-self-checkout?tab=readme-ov-file#-quickstart) | [Advanced Guide](https://intel-retail.github.io/documentation/use-cases/automated-self-checkout/automated-self-checkout.html) |
 | Retail AI Suite | [Loss Prevention](https://github.com/intel-retail/loss-prevention) | [Link](https://github.com/intel-retail/loss-prevention?tab=readme-ov-file#quickstart) | [Advanced Guide](https://intel-retail.github.io/documentation/use-cases/loss-prevention/loss-prevention.html) |
 
-Please visit each sample application sub-directory for respective **Getting Started**, **Customization** instructions.
+Visit each sample application sub-directory for the respective **Getting Started** and **Customization** instructions.
 
 ## Contribute
 
@@ -46,7 +50,7 @@ To learn how to contribute to the project, see [CONTRIBUTING.md](CONTRIBUTING.md
 
 ## Community and Support
 
-For support, please submit your bug report and feature request to [Github Issues](https://github.com/open-edge-platform/edge-ai-suites/issues). 
+For support, submit your bug report and feature request to [Github Issues](https://github.com/open-edge-platform/edge-ai-suites/issues). 
 
 ## License
 
@@ -54,8 +58,9 @@ The **Edge AI Suites** project is licensed under the [APACHE 2.0](LICENSE), exce
 
 | Sample Application | License |
 |:-------------------|:--------|
-|[Smart Intersection](metro-ai-suite/smart-intersection) | [LIMITED EDGE SOFTWARE DISTRIBUTION LICENSE AGREEMENT](metro-ai-suite/smart-intersection/LICENSE.txt) |
-|[Holographic Sensor Fusion](metro-ai-suite/holographic-sensor-fusion) | [LIMITED EDGE SOFTWARE DISTRIBUTION LICENSE AGREEMENT](metro-ai-suite/holographic-sensor-fusion/LICENSE.txt) |
+|[Smart Intersection](metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection) | [LIMITED EDGE SOFTWARE DISTRIBUTION LICENSE AGREEMENT](metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/LICENSE.txt) |
+|[Sensor Fusion For Traffic Management](metro-ai-suite/sensor-fusion-for-traffic-management) | [LIMITED EDGE SOFTWARE DISTRIBUTION LICENSE AGREEMENT](metro-ai-suite/sensor-fusion-for-traffic-management/LICENSE.txt) |
+|[Video Processing for NVR](metro-ai-suite/video-processing-for-nvr) | [LIMITED EDGE SOFTWARE DISTRIBUTION LICENSE AGREEMENT](metro-ai-suite/video-processing-for-nvr/LICENSE.txt) |
 
-Last Updated Date: May 30, 2025.  
+Last Updated Date: June 10, 2025.
  
