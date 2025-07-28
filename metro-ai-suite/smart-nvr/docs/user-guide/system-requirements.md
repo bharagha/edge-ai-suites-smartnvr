@@ -10,4 +10,4 @@ The base requirements for Smart NVR is dependent on the respective video analyti
 - GPU optimizations require Intel® integrated graphics or compatible accelerators.
 
 ## Validation
-- Follow instructions at [Get Started](./get-Started.md).
+- Follow instructions at [Get Started](./get-started.md).

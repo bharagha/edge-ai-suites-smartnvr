@@ -15,7 +15,6 @@ The Smart NVR is a next-generation network video recorder that integrates GenAI-
 
 - **Deployment**
   - [How to Build from Source](docs/user-guide/how-to-build-from-source.md): Instructions for building from source code.
-  - [How to Deploy with Helm](docs/user-guide/how-to-deploy-helm.md): Guide for deploying using Helm\* chart.
 
 - **API Reference**
   - [API Reference](docs/user-guide/api-reference.md): Comprehensive reference for the available REST API endpoints.
